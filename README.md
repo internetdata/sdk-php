@@ -1,4 +1,4 @@
-# [<img src="https://docs.internetdata.io/logo.svg" alt="InternetData" width="24"/>](https://internetdata.io/) InternetData PHP Client Library
+# [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" width="24"/>](https://internetdata.io/) InternetData PHP Client Library
 
 [![Packagist](https://img.shields.io/packagist/v/internetdata/internetdata.svg)](https://packagist.org/packages/internetdata/internetdata)
 [![license](https://img.shields.io/packagist/l/internetdata/internetdata.svg)](LICENSE)
@@ -134,7 +134,7 @@ There are official InternetData client libraries available for many languages in
 
 IP, ASN and Domain data to reveal unique insights about the internet. APIs, databases and live feeds available.
 
-[<img src="https://docs.internetdata.io/logo.svg" alt="InternetData" width="96"/>](https://internetdata.io/)
+[<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" width="96"/>](https://internetdata.io/)
 
 ## License
 
