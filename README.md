@@ -17,7 +17,7 @@ Requires PHP 8.1 or newer.
 
 ## Usage
 
-Every database is licensed by contract, so you always start with a key carrying the `db.download` scope. Talk to us to get one, then:
+Every database is licensed by contract, so you always start with a key carrying the `db.download` scope. Write to [dev@internetdata.io](mailto:dev@internetdata.io) for one, then:
 
 ```php
 use InternetData\Client;

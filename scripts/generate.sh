@@ -20,10 +20,20 @@ GENERATOR_IMAGE="${GENERATOR_IMAGE:-openapitools/openapi-generator-cli:v7.25.0}"
 
 # The spec still carries /api/v1, which is a different credential vocabulary
 # (`?apikey=<uuid>`) serving a fixed set of customers who cannot be moved. This
-# library targets v2 alone, and the normalizer makes that structural rather than
-# a convention: an operation not named here generates no method at all, so no
-# amount of reaching into the internal namespace finds a v1 call to make.
-V2_OPS="listDatabases|listDownloads|databaseMetadataV2|databaseChecksumV2|downloadDatabaseV2"
+# library targets v2 alone, and the selection below makes that structural rather
+# than a convention: v1's API class and its eight models are never WRITTEN, so
+# there is nothing to reach for in the internal namespace and nothing left
+# behind stale by a later spec that drops them.
+#
+# The model list is keyed by the name the generator settles on, so the three
+# inline wrappers appear here under their MAPPED names rather than the
+# `listDatabases_200_response` placeholders the mapping is keyed by. Spelled the
+# other way they are silently skipped and the API class references classes that
+# were never emitted.
+SELECT="apis=DatabaseV2"
+SELECT="${SELECT},models=Database:DatabaseVersion:DatabaseMetadata:DatabaseMetadataColumn"
+SELECT="${SELECT}:DbChecksums:Download:Error:DatabaseList:DownloadList:ChecksumsResponse"
+SELECT="${SELECT},supportingFiles"
 
 # Two escaping traps in one line. apiPackage and modelPackage are RELATIVE to
 # invokerPackage, so spelling them out in full produces
@@ -53,7 +63,7 @@ docker run --rm \
     -i /spec/openapi.yaml \
     -g php-nextgen \
     -o /out \
-    --openapi-normalizer "FILTER=operationId:${V2_OPS}" \
+    --global-property "$SELECT" \
     --inline-schema-name-mappings "$NAMES" \
     --additional-properties="$PROPS" \
     >/dev/null
