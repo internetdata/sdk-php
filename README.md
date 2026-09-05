@@ -126,7 +126,7 @@ $client = new Client(new Options(apiKey: $key, retries: 4));
 
 ### What your key can see
 
-`list` is the catalog **as the API served it for your key**, and the library keeps no copy of its own. Databases commissioned for a single customer are not listed to anyone else at all, so a listing taken with one key says nothing about what another key would see, and two organizations can hold two different catalogs at the same moment. Read what `list` returns; do not assume it is the same everywhere.
+`list` is the catalog **as the API served it for your key**, and the library keeps no copy of its own.
 
 ## Other Libraries
 
