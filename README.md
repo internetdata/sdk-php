@@ -1,4 +1,4 @@
-# [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" width="24"/>](https://internetdata.io/) InternetData PHP Client Library
+# [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" height="28"/>](https://internetdata.io/) InternetData PHP Client Library
 
 [![Packagist](https://img.shields.io/packagist/v/internetdata/internetdata.svg)](https://packagist.org/packages/internetdata/internetdata)
 [![license](https://img.shields.io/packagist/l/internetdata/internetdata.svg)](LICENSE)
