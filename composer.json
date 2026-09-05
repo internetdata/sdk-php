@@ -1,0 +1,58 @@
+{
+    "name": "internetdata/internetdata",
+    "description": "Official PHP client library for the InternetData API. Download and verify licensed IP, ASN and domain databases.",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://internetdata.io",
+    "keywords": [
+        "internetdata",
+        "ip-database",
+        "ip-intelligence",
+        "ip-geolocation",
+        "asn",
+        "whois",
+        "rdns",
+        "bogon",
+        "mmdb",
+        "maxmind-db",
+        "threat-intelligence"
+    ],
+    "authors": [
+        {
+            "name": "Mslm Dev",
+            "homepage": "https://internetdata.io"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/internetdata/sdk-php/issues",
+        "source": "https://github.com/internetdata/sdk-php"
+    },
+    "require": {
+        "php": "^8.1",
+        "ext-json": "*",
+        "composer-runtime-api": "^2.0",
+        "guzzlehttp/guzzle": "^7.5 || ^8.0",
+        "guzzlehttp/promises": "^2.0 || ^3.0",
+        "guzzlehttp/psr7": "^2.4 || ^3.0",
+        "psr/http-message": "^1.1 || ^2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0 || ^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "InternetData\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "InternetData\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
