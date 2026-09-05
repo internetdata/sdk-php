@@ -18,16 +18,30 @@ use PHPUnit\Framework\TestCase;
  */
 final class ClientTest extends TestCase
 {
-    public function testAnEmptyKeyIsRefusedWhereItIsSetRatherThanAtTheFirst401(): void
+    /**
+     * The key is optional because what this API serves without a licence is a
+     * product decision, and a client that could not be built without one would
+     * have to change shape to follow it. What must never go out is
+     * `Authorization: Bearer ` with nothing after it, which reads as a wrong key
+     * rather than as none.
+     */
+    public function testAKeylessClientSendsNoAuthorizationHeader(): void
     {
-        foreach (['', '   '] as $key) {
-            try {
-                new Options(apiKey: $key);
-                self::fail('an empty key was accepted');
-            } catch (InvalidArgumentException $e) {
-                self::assertStringContainsString('apiKey', $e->getMessage());
-            }
+        foreach ([new Options(), new Options(apiKey: '')] as $i => $options) {
+            $stub = new Stub([Stub::LIST => Stub::ok(['databases' => []])]);
+            $client = new Client(new Options(
+                apiKey: $options->apiKey,
+                httpClient: $stub->client,
+            ));
+
+            $client->database->list();
+
+            self::assertFalse($stub->requests[0]->hasHeader('Authorization'), "case {$i}");
         }
+    }
+
+    public function testUnusableSettingsAreRefusedWhereTheyAreSet(): void
+    {
         $this->expectException(InvalidArgumentException::class);
         new Options(apiKey: 'k', retries: -1);
     }

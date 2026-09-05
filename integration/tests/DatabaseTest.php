@@ -70,6 +70,24 @@ final class DatabaseTest extends TestCase
     }
 
     /**
+     * FIRST on purpose. PHPUnit runs the methods in declaration order, and every
+     * assertion below this one is vacuous unless the key reached the wire: the
+     * client accepts a keyless build and then sends no `Authorization` header at
+     * all, which is exactly what an unset CI secret produces, so a whole green
+     * run would mean nothing.
+     */
+    public function testTheKeyReachesTheApi(): void
+    {
+        self::client()->database->list();
+
+        $api = array_filter(self::$facts, static fn (array $f): bool => $f['host'] === Staging::HOST);
+        self::assertNotEmpty($api, 'no request reached the staging API');
+        foreach ($api as $fact) {
+            self::assertTrue($fact['carriedKey'], "the key never reached {$fact['path']}");
+        }
+    }
+
+    /**
      * A licence covers a database FAMILY, and the ids a download takes hang off
      * `versions`. PHP is loud about a spec that has drifted from its service
      * where the other bindings are quiet: the generated getters are typed, so a
@@ -255,17 +273,6 @@ final class DatabaseTest extends TestCase
             }
             self::assertNotNull($download->bytes, 'a successful attempt records no size');
             self::assertSame(302, $download->httpStatus, 'a v2 success is a redirect');
-        }
-    }
-
-    public function testTheKeyReachesTheApi(): void
-    {
-        self::client()->database->list();
-
-        $api = array_filter(self::$facts, static fn (array $f): bool => $f['host'] === Staging::HOST);
-        self::assertNotEmpty($api);
-        foreach ($api as $fact) {
-            self::assertTrue($fact['carriedKey'], "the key never reached {$fact['path']}");
         }
     }
 

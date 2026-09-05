@@ -14,7 +14,10 @@ use OutOfBoundsException;
  * A client for the InternetData database API.
  *
  * Access is granted by contract, one database family at a time, so everything
- * here needs a key carrying the `db.download` scope.
+ * published today needs a key carrying the `db.download` scope. The key is
+ * optional nonetheless, and a client built without one sends no `Authorization`
+ * header at all: what this API serves without a licence is a product decision,
+ * not the client's to refuse.
  */
 final class Client
 {
@@ -30,12 +33,16 @@ final class Client
      */
     public readonly DatabaseApi $database;
 
-    public function __construct(Options $options)
+    public function __construct(Options $options = new Options())
     {
         $config = (new Configuration())
             ->setHost(rtrim($options->baseUrl, '/'))
-            ->setUserAgent(self::userAgent())
-            ->setAccessToken($options->apiKey);
+            ->setUserAgent(self::userAgent());
+        // Set only when there is one: `Authorization: Bearer ` with nothing
+        // after it reads as a wrong key rather than as no key.
+        if ($options->apiKey !== null && $options->apiKey !== '') {
+            $config->setAccessToken($options->apiKey);
+        }
 
         $http = $options->httpClient ?? new GuzzleClient();
         $this->database = new DatabaseApi(

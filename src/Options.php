@@ -15,10 +15,11 @@ final class Options
 {
     public function __construct(
         /**
-         * Your API key, carrying the `db.download` scope. There is no
-         * unauthenticated tier: every endpoint here is licensed data.
+         * Your API key, carrying the `db.download` scope. Omit it to send no
+         * `Authorization` header at all, which reaches only what this API
+         * serves without a licence.
          */
-        public readonly string $apiKey,
+        public readonly ?string $apiKey = null,
         public readonly string $baseUrl = Client::DEFAULT_BASE_URL,
         /** Retry attempts for a transient failure. */
         public readonly int $retries = 2,
@@ -31,11 +32,6 @@ final class Options
          */
         public readonly ?ClientInterface $httpClient = null,
     ) {
-        // Caught here rather than at the first 401, because an empty key is
-        // almost always an environment variable that was never set.
-        if (trim($apiKey) === '') {
-            throw new InvalidArgumentException('apiKey is required');
-        }
         if ($retries < 0) {
             throw new InvalidArgumentException('retries cannot be negative');
         }
