@@ -117,11 +117,11 @@ final class ConformanceTest extends TestCase
         self::assertSame([0, $case['expect']['retryAfterSeconds'] * 1000], $stub->delays);
     }
 
-    public function testEveryStandingAndRedistributionSurvivesTheMapping(): void
+    public function testEveryStandingAndLicenseTypeSurvivesTheMapping(): void
     {
         $rows = [];
         foreach (self::$data['standings'] as $i => $standing) {
-            foreach ([...self::$data['redistribution'], null] as $j => $right) {
+            foreach ([...self::$data['license_type'], null] as $j => $right) {
                 $rows[] = self::databaseBody("fam_{$i}_{$j}", $standing, $right);
             }
         }
@@ -133,7 +133,7 @@ final class ConformanceTest extends TestCase
         foreach ($rows as $n => $row) {
             self::assertSame($row['base'], $got[$n]->base);
             self::assertSame($row['standing'], $got[$n]->standing, 'standing must survive verbatim');
-            self::assertSame($row['redistribution'], $got[$n]->redistribution, 'redistribution');
+            self::assertSame($row['license_type'], $got[$n]->license_type, 'license_type');
             self::assertSame($row['starts'], $got[$n]->starts?->format('Y-m-d\TH:i:s\Z'));
             self::assertNull($got[$n]->expires, 'a null term end must stay null, not become a date');
         }
@@ -142,7 +142,7 @@ final class ConformanceTest extends TestCase
     public function testEveryPublishedFormatSurvivesTheMapping(): void
     {
         $formats = self::$data['formats'];
-        $row = self::databaseBody('bogon_ip', 'licensed', 'internal');
+        $row = self::databaseBody('bogon_ip', 'licensed', 'standard');
         $row['versions'][0]['formats'] = $formats;
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => [$row]])]);
 
@@ -157,7 +157,7 @@ final class ConformanceTest extends TestCase
     public function testAListingIsReturnedExactlyAsServed(): void
     {
         $rows = [
-            self::databaseBody('bogon_asn', 'licensed', 'internal'),
+            self::databaseBody('bogon_asn', 'licensed', 'standard'),
             self::databaseBody('bogon_ip', 'expired', 'evaluation'),
             self::databaseBody('tor_ip', 'unlicensed', null),
         ];
@@ -196,8 +196,8 @@ final class ConformanceTest extends TestCase
      */
     public function testAListingIsNeverReusedAcrossClients(): void
     {
-        $mine = self::databaseBody('bogon_ip', 'licensed', 'internal');
-        $theirs = self::databaseBody('tor_ip', 'licensed', 'internal');
+        $mine = self::databaseBody('bogon_ip', 'licensed', 'standard');
+        $theirs = self::databaseBody('tor_ip', 'licensed', 'standard');
         $stub = new Stub([Stub::LIST => [
             Stub::ok(['databases' => [$mine]]),
             Stub::ok(['databases' => [$theirs]]),
@@ -245,14 +245,14 @@ final class ConformanceTest extends TestCase
     }
 
     /** @return array<string, mixed> */
-    private static function databaseBody(string $base, string $standing, ?string $redistribution): array
+    private static function databaseBody(string $base, string $standing, ?string $license_type): array
     {
         return [
             'base' => $base,
             'name' => ucwords(str_replace('_', ' ', $base)),
             'summary' => "everything in {$base}",
             'standing' => $standing,
-            'redistribution' => $redistribution,
+            'license_type' => $license_type,
             'starts' => '2026-01-01T00:00:00Z',
             'expires' => null,
             'versions' => [[

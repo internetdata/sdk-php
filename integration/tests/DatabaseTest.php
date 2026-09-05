@@ -33,7 +33,7 @@ final class DatabaseTest extends TestCase
     private const CEILING = 8 * 1024 * 1024;
 
     private const STANDINGS = ['licensed', 'expired', 'unlicensed'];
-    private const RIGHTS = ['evaluation', 'internal', 'redistribute'];
+    private const RIGHTS = ['evaluation', 'standard', 'redistribute'];
     private const FORMATS = ['csvgz', 'mmdb'];
     private const OUTCOMES = ['ok', 'unauthorized', 'denied', 'expired', 'unknown', 'unavailable'];
 
@@ -104,11 +104,11 @@ final class DatabaseTest extends TestCase
             self::assertNotSame('', $database->base);
             self::assertNotSame('', $database->name);
             self::assertContains($database->standing, self::STANDINGS, "{$where}: undocumented standing");
-            if ($database->redistribution !== null) {
-                self::assertContains($database->redistribution, self::RIGHTS, "{$where}: undocumented right");
+            if ($database->license_type !== null) {
+                self::assertContains($database->license_type, self::RIGHTS, "{$where}: undocumented right");
             }
             if ($database->standing === 'unlicensed') {
-                self::assertNull($database->redistribution, "{$where}: a right without a licence");
+                self::assertNull($database->license_type, "{$where}: a right without a licence");
             }
             self::assertNotEmpty($database->versions, "{$where}: no versions");
             foreach ($database->versions as $version) {

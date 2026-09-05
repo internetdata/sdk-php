@@ -215,7 +215,7 @@ final class ClientTest extends TestCase
             'name' => 'Bogon IP',
             'summary' => 'Reserved ranges.',
             'standing' => 'licensed',
-            'redistribution' => 'internal',
+            'license_type' => 'standard',
             'starts' => null,
             'expires' => null,
             'versions' => [[

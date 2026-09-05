@@ -31,7 +31,7 @@ final class Database
          * What your licence permits: `evaluation`, `internal` or `redistribute`.
          * Null when there is no licence.
          */
-        public readonly ?string $redistribution,
+        public readonly ?string $license_type,
         public readonly ?DateTimeImmutable $starts,
         /** Null when the licence has no end date, or when there is none. */
         public readonly ?DateTimeImmutable $expires,
@@ -52,7 +52,7 @@ final class Database
             name: $w->getName(),
             summary: $w->getSummary(),
             standing: $w->getStanding(),
-            redistribution: $w->getRedistribution(),
+            license_type: $w->getLicenseType(),
             starts: Dates::immutable($w->getStarts()),
             expires: Dates::immutable($w->getExpires()),
             versions: array_map(DatabaseVersion::fromWire(...), $w->getVersions()),
