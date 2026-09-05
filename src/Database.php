@@ -28,7 +28,7 @@ final class Database
          */
         public readonly string $standing,
         /**
-         * What your licence permits: `evaluation`, `internal` or `redistribute`.
+         * What your licence permits: `evaluation`, `standard` or `redistribute`.
          * Null when there is no licence.
          */
         public readonly ?string $license_type,
