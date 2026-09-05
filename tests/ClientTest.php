@@ -38,7 +38,7 @@ final class ClientTest extends TestCase
     {
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => []])]);
 
-        self::client($stub)->list();
+        self::client($stub)->database->list();
 
         self::assertSame('Bearer secret-key', $stub->requests[0]->getHeaderLine('Authorization'));
         self::assertStringContainsString('internetdata-php/', $stub->requests[0]->getHeaderLine('User-Agent'));
@@ -60,7 +60,7 @@ final class ClientTest extends TestCase
             'checksums' => $digests,
         ])]);
 
-        $got = self::client($stub)->checksums('bogon_ip_v1', 'mmdb');
+        $got = self::client($stub)->database->checksums('bogon_ip_v1', 'mmdb');
 
         self::assertSame($digests['md5'], $got->md5);
         self::assertSame($digests['sha1'], $got->sha1);
@@ -84,7 +84,7 @@ final class ClientTest extends TestCase
             'size' => ['csvgz' => 760, 'mmdb' => 3524],
         ])]);
 
-        $got = self::client($stub)->metadata('bogon_ip_v1');
+        $got = self::client($stub)->database->metadata('bogon_ip_v1');
 
         self::assertSame('bogon_ip_v1', $got->id);
         self::assertSame('daily', $got->updateFreq);
@@ -107,7 +107,7 @@ final class ClientTest extends TestCase
             'size' => ['csvgz' => 264],
         ])]);
 
-        $got = self::client($stub)->metadata('bogon_asn_v1');
+        $got = self::client($stub)->database->metadata('bogon_asn_v1');
 
         self::assertNull($got->updateFreq);
         self::assertSame([], $got->sample);
@@ -141,7 +141,7 @@ final class ClientTest extends TestCase
             ],
         ]])]);
 
-        $got = self::client($stub)->downloads(25);
+        $got = self::client($stub)->database->downloads(25);
 
         self::assertCount(2, $got);
         self::assertSame('bogon_ip_v1', $got[0]->databaseId);
@@ -159,7 +159,7 @@ final class ClientTest extends TestCase
         $link = 'https://example-storage.invalid/bogon_ip_v1.mmdb?X-Amz-Signature=deadbeef';
         $stub = new Stub([Stub::DOWNLOAD => ['status' => 302, 'headers' => ['Location' => $link]]]);
 
-        $got = self::client($stub)->downloadUrl('bogon_ip_v1', 'mmdb');
+        $got = self::client($stub)->database->downloadUrl('bogon_ip_v1', 'mmdb');
 
         self::assertSame($link, $got);
         self::assertSame([Stub::DOWNLOAD], $stub->calls, 'the redirect was chased');
@@ -171,7 +171,7 @@ final class ClientTest extends TestCase
         $stub = new Stub([Stub::DOWNLOAD => ['status' => 302]]);
 
         try {
-            self::client($stub)->downloadUrl('bogon_ip_v1', 'mmdb');
+            self::client($stub)->database->downloadUrl('bogon_ip_v1', 'mmdb');
             self::fail('an empty link was handed out');
         } catch (InternetDataException $e) {
             self::assertSame(ErrorKind::ServerError, $e->kind);
@@ -183,7 +183,7 @@ final class ClientTest extends TestCase
         $stub = new Stub([Stub::LIST => Stub::transportFailure()]);
 
         try {
-            self::client($stub)->list();
+            self::client($stub)->database->list();
             self::fail('a refused connection was not reported');
         } catch (InternetDataException $e) {
             self::assertSame(ErrorKind::Network, $e->kind);
@@ -212,7 +212,7 @@ final class ClientTest extends TestCase
             ]],
         ]]])]);
 
-        $database = self::client($stub)->list()[0];
+        $database = self::client($stub)->database->list()[0];
 
         $this->expectException(Error::class);
         $database->standing = 'unlicensed';

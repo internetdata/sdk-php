@@ -120,8 +120,8 @@ final class DatabaseTest extends TestCase
      */
     public function testTheCatalogIsWhateverTheServerServedForThisKey(): void
     {
-        $first = self::client()->list();
-        $again = self::client()->list();
+        $first = self::client()->database->list();
+        $again = self::client()->database->list();
 
         self::assertSame(
             array_column($first, 'base'),
@@ -144,7 +144,7 @@ final class DatabaseTest extends TestCase
         $before = count(self::$facts);
 
         try {
-            self::client()->downloadUrl($id, self::FORMAT);
+            self::client()->database->downloadUrl($id, self::FORMAT);
             self::fail("{$id} was served despite being unlicensed");
         } catch (InternetDataException $e) {
             self::assertSame(ErrorKind::Forbidden, $e->kind, $id);
@@ -163,7 +163,7 @@ final class DatabaseTest extends TestCase
         $before = count(self::$facts);
 
         try {
-            self::client()->metadata('no_such_database_v1');
+            self::client()->database->metadata('no_such_database_v1');
             self::fail('an unknown id was served');
         } catch (InternetDataException $e) {
             self::assertSame(404, $e->status);
@@ -204,7 +204,7 @@ final class DatabaseTest extends TestCase
     {
         $dl = self::downloaded();
 
-        $bytes = self::client()->downloadBytes(self::DATABASE_ID, self::FORMAT);
+        $bytes = self::client()->database->downloadBytes(self::DATABASE_ID, self::FORMAT);
 
         self::assertSame($dl['bytes'], strlen($bytes), 'the in-memory copy is a different length');
         self::assertSame($dl['checksums']->sha256, hash('sha256', $bytes), 'the in-memory copy is not the file');
@@ -222,7 +222,7 @@ final class DatabaseTest extends TestCase
             self::budgetedSize(),
             'refusing to hand out a link to a large database',
         );
-        $url = self::client()->downloadUrl(self::DATABASE_ID, self::FORMAT);
+        $url = self::client()->database->downloadUrl(self::DATABASE_ID, self::FORMAT);
 
         self::assertStringStartsWith('https://', $url);
         $host = (string) parse_url($url, PHP_URL_HOST);
@@ -244,7 +244,7 @@ final class DatabaseTest extends TestCase
      */
     public function testTheDownloadLedgerAnswersItsDocumentedShape(): void
     {
-        $downloads = self::client()->downloads(5);
+        $downloads = self::client()->database->downloads(5);
 
         self::assertLessThanOrEqual(5, count($downloads), 'the limit was not honored');
         foreach ($downloads as $download) {
@@ -260,7 +260,7 @@ final class DatabaseTest extends TestCase
 
     public function testTheKeyReachesTheApi(): void
     {
-        self::client()->list();
+        self::client()->database->list();
 
         $api = array_filter(self::$facts, static fn (array $f): bool => $f['host'] === Staging::HOST);
         self::assertNotEmpty($api);
@@ -284,7 +284,7 @@ final class DatabaseTest extends TestCase
      */
     private static function catalog(): array
     {
-        return self::$catalog ??= self::client()->list();
+        return self::$catalog ??= self::client()->database->list();
     }
 
     /** @return list<\InternetData\Database> */
@@ -319,7 +319,7 @@ final class DatabaseTest extends TestCase
         if ($size !== null) {
             return $size;
         }
-        $meta = self::client()->metadata(self::DATABASE_ID);
+        $meta = self::client()->database->metadata(self::DATABASE_ID);
         self::assertSame(self::DATABASE_ID, $meta->id);
         $published = $meta->size[self::FORMAT] ?? null;
         self::assertIsInt($published, self::DATABASE_ID . ' publishes no size to check a transfer against');
@@ -346,10 +346,10 @@ final class DatabaseTest extends TestCase
         $size = self::budgetedSize();
 
         $path = self::$tmp . '/' . self::DATABASE_ID . '.csv.gz';
-        $bytes = self::client()->download(self::DATABASE_ID, self::FORMAT, $path);
+        $bytes = self::client()->database->download(self::DATABASE_ID, self::FORMAT, $path);
         // Read after the transfer, so a rebuild between the two calls shows up as
         // a digest mismatch rather than passing against a digest of nothing.
-        $checksums = self::client()->checksums(self::DATABASE_ID, self::FORMAT);
+        $checksums = self::client()->database->checksums(self::DATABASE_ID, self::FORMAT);
         print self::DATABASE_ID . '.' . self::FORMAT . ": {$bytes} bytes, metadata says {$size}\n";
 
         return self::$transfer = ['bytes' => $bytes, 'path' => $path, 'checksums' => $checksums];

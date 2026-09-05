@@ -57,7 +57,7 @@ final class ConformanceTest extends TestCase
             $name = $case['name'];
 
             try {
-                $client->metadata('bogon_ip_v1');
+                $client->database->metadata('bogon_ip_v1');
                 self::fail("{$name}: expected a failure");
             } catch (InternetDataException $e) {
                 self::assertSame($case['expect']['kind'], $e->kind->value, $name);
@@ -89,7 +89,7 @@ final class ConformanceTest extends TestCase
             $client = self::client($stub, retries: 2);
 
             try {
-                $client->metadata('bogon_ip_v1');
+                $client->database->metadata('bogon_ip_v1');
                 self::fail("{$case['name']}: expected a failure");
             } catch (InternetDataException) {
                 // The classification is what the count proves.
@@ -112,7 +112,7 @@ final class ConformanceTest extends TestCase
             Stub::ok(self::metadataBody()),
         ]]);
 
-        self::client($stub)->metadata('bogon_ip_v1');
+        self::client($stub)->database->metadata('bogon_ip_v1');
 
         self::assertSame([0, $case['expect']['retryAfterSeconds'] * 1000], $stub->delays);
     }
@@ -127,7 +127,7 @@ final class ConformanceTest extends TestCase
         }
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => $rows])]);
 
-        $got = self::client($stub)->list();
+        $got = self::client($stub)->database->list();
 
         self::assertCount(count($rows), $got);
         foreach ($rows as $n => $row) {
@@ -146,7 +146,7 @@ final class ConformanceTest extends TestCase
         $row['versions'][0]['formats'] = $formats;
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => [$row]])]);
 
-        $version = self::client($stub)->list()[0]->versions[0];
+        $version = self::client($stub)->database->list()[0]->versions[0];
 
         self::assertSame($formats, $version->formats);
         self::assertSame($row['versions'][0]['id'], $version->id, 'a download takes the VERSION id');
@@ -163,7 +163,7 @@ final class ConformanceTest extends TestCase
         ];
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => $rows])]);
 
-        $got = self::client($stub)->list();
+        $got = self::client($stub)->database->list();
 
         self::assertSame(['bogon_asn', 'bogon_ip', 'tor_ip'], array_column($got, 'base'));
     }
@@ -177,12 +177,12 @@ final class ConformanceTest extends TestCase
     public function testNoCatalogIsCompiledIntoTheClient(): void
     {
         $empty = new Stub([Stub::LIST => Stub::ok(['databases' => []])]);
-        self::assertSame([], self::client($empty)->list(), 'an empty catalog must not be backfilled');
+        self::assertSame([], self::client($empty)->database->list(), 'an empty catalog must not be backfilled');
 
         $unknown = self::databaseBody('a_family_this_client_has_never_heard_of', 'licensed', 'redistribute');
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => [$unknown]])]);
 
-        $got = self::client($stub)->list();
+        $got = self::client($stub)->database->list();
 
         self::assertCount(1, $got);
         self::assertSame($unknown['base'], $got[0]->base);
@@ -203,8 +203,8 @@ final class ConformanceTest extends TestCase
             Stub::ok(['databases' => [$theirs]]),
         ]]);
 
-        $a = self::client($stub, key: 'key-a')->list();
-        $b = self::client($stub, key: 'key-b')->list();
+        $a = self::client($stub, key: 'key-a')->database->list();
+        $b = self::client($stub, key: 'key-b')->database->list();
 
         self::assertSame(['bogon_ip'], array_column($a, 'base'));
         self::assertSame(['tor_ip'], array_column($b, 'base'), 'the second key was served the first key catalog');
@@ -215,8 +215,8 @@ final class ConformanceTest extends TestCase
             Stub::ok(['databases' => []]),
         ]]);
         $client = self::client($repeat);
-        $client->list();
-        self::assertSame([], $client->list(), 'the same client reused a listing it had already taken');
+        $client->database->list();
+        self::assertSame([], $client->database->list(), 'the same client reused a listing it had already taken');
     }
 
     public function testEveryVisibilityRuleInTheCorpusHasATest(): void

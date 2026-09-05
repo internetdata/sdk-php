@@ -44,7 +44,7 @@ final class DownloadTest extends TestCase
         $client = $this->client(['blobBytes' => self::SMALL]);
         $path = $this->tmp . '/bogon_ip_v1.csv.gz';
 
-        $written = $client->download('bogon_ip_v1', 'csvgz', $path);
+        $written = $client->database->download('bogon_ip_v1', 'csvgz', $path);
 
         self::assertSame(self::SMALL, $written);
         self::assertSame('aaa', (string) file_get_contents($path));
@@ -59,7 +59,7 @@ final class DownloadTest extends TestCase
     {
         $client = $this->client(['blobBytes' => self::SMALL]);
 
-        $url = $client->downloadUrl('bogon_ip_v1', 'csvgz');
+        $url = $client->database->downloadUrl('bogon_ip_v1', 'csvgz');
 
         self::assertSame($this->origin->baseUrl . '/blob', $url);
         self::assertSame(
@@ -74,7 +74,7 @@ final class DownloadTest extends TestCase
         $client = $this->client(['blobBytes' => self::SMALL]);
         $handle = fopen('php://temp', 'w+b');
 
-        $written = $client->download('bogon_ip_v1', 'csvgz', $handle);
+        $written = $client->database->download('bogon_ip_v1', 'csvgz', $handle);
 
         self::assertSame(self::SMALL, $written);
         rewind($handle);
@@ -88,7 +88,7 @@ final class DownloadTest extends TestCase
     {
         $client = $this->client(['blobBytes' => self::SMALL]);
 
-        self::assertSame('aaa', $client->downloadBytes('bogon_ip_v1', 'csvgz'));
+        self::assertSame('aaa', $client->database->downloadBytes('bogon_ip_v1', 'csvgz'));
     }
 
     public function testADestinationThatIsNeitherAPathNorAStreamIsRefusedBeforeAnyRequest(): void
@@ -96,7 +96,7 @@ final class DownloadTest extends TestCase
         $client = $this->client(['blobBytes' => self::SMALL]);
 
         try {
-            $client->download('bogon_ip_v1', 'csvgz', ['not', 'a', 'destination']);
+            $client->database->download('bogon_ip_v1', 'csvgz', ['not', 'a', 'destination']);
             self::fail('an unusable destination was accepted');
         } catch (InvalidArgumentException) {
             self::assertSame([], $this->origin->requests(), 'a bad destination must cost no quota');
@@ -110,7 +110,7 @@ final class DownloadTest extends TestCase
     {
         $client = $this->client(['blobBytes' => self::SMALL]);
 
-        $client->download('bogon_ip_v1', 'csvgz', $this->tmp . '/keys.csv.gz');
+        $client->database->download('bogon_ip_v1', 'csvgz', $this->tmp . '/keys.csv.gz');
 
         $api = $this->origin->requestsTo('/api/v2/database/download')[0];
         $storage = $this->origin->requestsTo('/blob')[0];
@@ -134,11 +134,11 @@ final class DownloadTest extends TestCase
         $client = $this->client(['blobBytes' => $size]);
 
         $before = memory_get_peak_usage(true);
-        $written = $client->download('bogon_ip_v1', 'mmdb', $this->tmp . '/big.mmdb');
+        $written = $client->database->download('bogon_ip_v1', 'mmdb', $this->tmp . '/big.mmdb');
         $streamed = memory_get_peak_usage(true) - $before;
 
         $before = memory_get_peak_usage(true);
-        $bytes = $client->downloadBytes('bogon_ip_v1', 'mmdb');
+        $bytes = $client->database->downloadBytes('bogon_ip_v1', 'mmdb');
         $held = memory_get_peak_usage(true) - $before;
 
         self::assertSame($size, $written, 'the whole body must have been transferred');
@@ -152,7 +152,7 @@ final class DownloadTest extends TestCase
         $client = $this->client(['storageStatus' => 403], retries: 0);
 
         try {
-            $client->downloadBytes('bogon_ip_v1', 'csvgz');
+            $client->database->downloadBytes('bogon_ip_v1', 'csvgz');
             self::fail('a refused link was not reported');
         } catch (InternetDataException $e) {
             self::assertSame(ErrorKind::Forbidden, $e->kind);
@@ -172,7 +172,7 @@ final class DownloadTest extends TestCase
         $path = $this->tmp . '/half-a-database.csv.gz';
 
         try {
-            $client->download('bogon_ip_v1', 'csvgz', $path);
+            $client->database->download('bogon_ip_v1', 'csvgz', $path);
             self::fail('a truncated transfer was reported as a whole one');
         } catch (InternetDataException $e) {
             self::assertSame(ErrorKind::Network, $e->kind);
@@ -193,7 +193,7 @@ final class DownloadTest extends TestCase
         $client = $this->client(['blobBytes' => self::SMALL, 'failFirst' => 1], retries: 2);
         $path = $this->tmp . '/retried.csv.gz';
 
-        $written = $client->download('bogon_ip_v1', 'csvgz', $path);
+        $written = $client->database->download('bogon_ip_v1', 'csvgz', $path);
 
         self::assertSame(self::SMALL, $written);
         self::assertSame('aaa', (string) file_get_contents($path));

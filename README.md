@@ -25,10 +25,12 @@ use InternetData\Options;
 
 $client = new Client(new Options(apiKey: getenv('INTERNETDATA_API_KEY')));
 
-foreach ($client->list() as $database) {
+foreach ($client->database->list() as $database) {
     echo "{$database->base}: {$database->standing}\n";   // bogon_ip: licensed
 }
 ```
+
+Every call hangs off `$client->database`, which is the whole of this API and is where the sibling VPNDetection library keeps the same seven calls.
 
 A licence is held against a database FAMILY, while a download names one version, so the ids you pass everywhere else come from `versions`:
 
@@ -44,7 +46,7 @@ $database->redistribution;          // 'internal', or null when there is no lice
 `download` streams a file straight to disk, so nothing bigger than a chunk is ever held in memory whatever the database weighs. It writes through a neighboring `.part` file and renames on success, so a transfer that dies half way leaves no truncated file that reads as a whole database:
 
 ```php
-$written = $client->download('bogon_ip_v1', 'mmdb', '/srv/data/bogon_ip_v1.mmdb');
+$written = $client->database->download('bogon_ip_v1', 'mmdb', '/srv/data/bogon_ip_v1.mmdb');
 echo "{$written} bytes";
 ```
 
@@ -52,19 +54,19 @@ Pass a stream you opened instead of a path, and it stays yours to close:
 
 ```php
 $handle = fopen('php://temp', 'w+b');
-$client->download('bogon_ip_v1', 'csvgz', $handle);
+$client->database->download('bogon_ip_v1', 'csvgz', $handle);
 ```
 
 `downloadUrl` hands back the time-limited link the API redirects to, without following it. The link authorizes itself, so it carries none of your credentials and you can pass it to whatever should run the transfer:
 
 ```php
-$url = $client->downloadUrl('bogon_ip_v1', 'mmdb');
+$url = $client->database->downloadUrl('bogon_ip_v1', 'mmdb');
 ```
 
 `downloadBytes` returns the file as a string. It holds the whole thing in memory, and the catalog spans seven orders of magnitude, so check `metadata` first for anything you have not measured: past your `memory_limit` this is a fatal error, not merely a slow one.
 
 ```php
-$bytes = $client->downloadBytes('bogon_asn_v1', 'csvgz');
+$bytes = $client->database->downloadBytes('bogon_asn_v1', 'csvgz');
 ```
 
 ### What is inside, and whether it changed
@@ -72,7 +74,7 @@ $bytes = $client->downloadBytes('bogon_asn_v1', 'csvgz');
 `metadata` answers the schema, a few real rows, the row count and the size of every published format, without moving the file. Poll it to decide whether today's build is worth fetching, and to budget a transfer before you start it:
 
 ```php
-$meta = $client->metadata('bogon_ip_v1');
+$meta = $client->database->metadata('bogon_ip_v1');
 
 $meta->updated->format('Y-m-d');   // '2026-09-04'
 $meta->entries;                    // 44
@@ -83,7 +85,7 @@ $meta->schema['csvgz'][0]->name;   // 'start_ip'
 `checksums` publishes four digests per file, so a download can be verified against what the API says it served:
 
 ```php
-$sums = $client->checksums('bogon_ip_v1', 'csvgz');
+$sums = $client->database->checksums('bogon_ip_v1', 'csvgz');
 
 hash_file('sha256', '/srv/data/bogon_ip_v1.csv.gz') === $sums->sha256;   // true
 ```
@@ -93,7 +95,7 @@ hash_file('sha256', '/srv/data/bogon_ip_v1.csv.gz') === $sums->sha256;   // true
 `downloads` lists your organization's recent attempts, newest first. Refusals are listed too, because a denial is what answers "it stopped working" and its absence answers nothing:
 
 ```php
-foreach ($client->downloads(20) as $attempt) {
+foreach ($client->database->downloads(20) as $attempt) {
     echo "{$attempt->created->format('c')} {$attempt->databaseId} {$attempt->outcome}\n";
 }
 ```
@@ -106,7 +108,7 @@ Failures throw an `InternetDataException` carrying a `kind` and an `isRetryable(
 use InternetData\InternetDataException;
 
 try {
-    $client->download('bogon_ip_v1', 'mmdb', '/srv/data/bogon_ip_v1.mmdb');
+    $client->database->download('bogon_ip_v1', 'mmdb', '/srv/data/bogon_ip_v1.mmdb');
 } catch (InternetDataException $err) {
     echo $err->kind->value, ' ', $err->isRetryable() ? 'retryable' : 'final', "\n";
 }
