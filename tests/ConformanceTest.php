@@ -133,7 +133,7 @@ final class ConformanceTest extends TestCase
         foreach ($rows as $n => $row) {
             self::assertSame($row['base'], $got[$n]->base);
             self::assertSame($row['standing'], $got[$n]->standing, 'standing must survive verbatim');
-            self::assertSame($row['license_type'], $got[$n]->license_type, 'license_type');
+            self::assertSame($row['license_type'], $got[$n]->licenseType, 'license_type');
             self::assertSame($row['starts'], $got[$n]->starts?->format('Y-m-d\TH:i:s\Z'));
             self::assertNull($got[$n]->expires, 'a null term end must stay null, not become a date');
         }
@@ -245,14 +245,14 @@ final class ConformanceTest extends TestCase
     }
 
     /** @return array<string, mixed> */
-    private static function databaseBody(string $base, string $standing, ?string $license_type): array
+    private static function databaseBody(string $base, string $standing, ?string $licenseType): array
     {
         return [
             'base' => $base,
             'name' => ucwords(str_replace('_', ' ', $base)),
             'summary' => "everything in {$base}",
             'standing' => $standing,
-            'license_type' => $license_type,
+            'license_type' => $licenseType,
             'starts' => '2026-01-01T00:00:00Z',
             'expires' => null,
             'versions' => [[

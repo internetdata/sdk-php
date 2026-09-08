@@ -38,7 +38,7 @@ A licence is held against a database FAMILY, while a download names one version,
 $database->base;                    // 'bogon_ip'
 $database->versions[0]->id;         // 'bogon_ip_v1', the id a download takes
 $database->versions[0]->formats;    // ['csvgz', 'mmdb']
-$database->license_type;          // 'standard', or null when there is no licence
+$database->licenseType;             // 'standard', or null when there is no licence
 ```
 
 ### Downloading

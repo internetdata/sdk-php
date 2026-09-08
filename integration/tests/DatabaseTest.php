@@ -104,11 +104,11 @@ final class DatabaseTest extends TestCase
             self::assertNotSame('', $database->base);
             self::assertNotSame('', $database->name);
             self::assertContains($database->standing, self::STANDINGS, "{$where}: undocumented standing");
-            if ($database->license_type !== null) {
-                self::assertContains($database->license_type, self::RIGHTS, "{$where}: undocumented right");
+            if ($database->licenseType !== null) {
+                self::assertContains($database->licenseType, self::RIGHTS, "{$where}: undocumented right");
             }
             if ($database->standing === 'unlicensed') {
-                self::assertNull($database->license_type, "{$where}: a right without a licence");
+                self::assertNull($database->licenseType, "{$where}: a right without a licence");
             }
             self::assertNotEmpty($database->versions, "{$where}: no versions");
             foreach ($database->versions as $version) {
