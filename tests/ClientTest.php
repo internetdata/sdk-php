@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace InternetData\Tests;
 
 use Error;
+use GuzzleHttp\RequestOptions;
 use InternetData\Client;
 use InternetData\ErrorKind;
 use InternetData\InternetDataException;
@@ -230,6 +231,45 @@ final class ClientTest extends TestCase
 
         $this->expectException(Error::class);
         $database->standing = 'unlicensed';
+    }
+
+    public function testApiCallsCarryATimeout(): void
+    {
+        $stub = new Stub(['/api/v2/database/list' => Stub::ok(['databases' => []])]);
+
+        (new Client(new Options(apiKey: 'k', timeout: 7.5, httpClient: $stub->client)))
+            ->database->list();
+
+        // Guzzle defaults both to 0, meaning unlimited, so an unset option here
+        // is a caller held until the process is killed.
+        $this->assertSame(7.5, $stub->options[0][RequestOptions::TIMEOUT]);
+        $this->assertSame(7.5, $stub->options[0][RequestOptions::CONNECT_TIMEOUT]);
+    }
+
+    public function testATransferIsExemptFromTheWholeRequestTimeout(): void
+    {
+        $stub = new Stub([
+            '/api/v2/database/download' => [
+                'status' => 302,
+                'headers' => ['Location' => 'https://storage.invalid/bogon_ip_v1.csv.gz'],
+            ],
+            '/bogon_ip_v1.csv.gz' => ['status' => 200, 'body' => 'payload'],
+        ]);
+
+        (new Client(new Options(apiKey: 'k', timeout: 7.5, httpClient: $stub->client)))
+            ->database->downloadBytes('bogon_ip_v1', 'csvgz');
+
+        // 7.5s is right for the redirect and wrong for a body that reaches
+        // gigabytes, so only the connect phase keeps it.
+        $transfer = $stub->options[1];
+        $this->assertSame(0, $transfer[RequestOptions::TIMEOUT]);
+        $this->assertSame(7.5, $transfer[RequestOptions::CONNECT_TIMEOUT]);
+    }
+
+    public function testANegativeTimeoutIsRefused(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new Options(timeout: -1);
     }
 
     private static function client(Stub $stub, int $retries = 2): Client

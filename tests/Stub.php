@@ -33,6 +33,9 @@ final class Stub
     /** @var list<RequestInterface> Every request as it was actually sent. */
     public array $requests = [];
 
+    /** @var list<array<string, mixed>> The Guzzle options each call was sent with. */
+    public array $options = [];
+
     public readonly GuzzleClient $client;
 
     /** @var array<string, list<array<string, mixed>>> */
@@ -80,6 +83,7 @@ final class Stub
     {
         $this->calls[] = $request->getUri()->getPath();
         $this->delays[] = (int) ($options['delay'] ?? 0);
+        $this->options[] = $options;
         $this->requests[] = $request;
 
         $outcome = $this->responseFor($request->getUri()->getPath());

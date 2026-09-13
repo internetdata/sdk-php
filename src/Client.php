@@ -47,7 +47,7 @@ final class Client
         $http = $options->httpClient ?? new GuzzleClient();
         $this->database = new DatabaseApi(
             new DatabaseV2Api($http, $config),
-            new Transport($http, $options->retries),
+            new Transport($http, $options->retries, $options->timeout),
         );
     }
 

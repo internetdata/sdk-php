@@ -24,6 +24,14 @@ final class Options
         /** Retry attempts for a transient failure. */
         public readonly int $retries = 2,
         /**
+         * Seconds one API call may take before it is abandoned, per attempt.
+         *
+         * **A database transfer is deliberately exempt**, keeping only the
+         * connect bound: this is the right limit for a metadata call and the
+         * wrong one for a body that reaches gigabytes.
+         */
+        public readonly float $timeout = 30.0,
+        /**
          * Override the HTTP implementation, mostly for tests.
          *
          * Guzzle rather than PSR-18 because the generated core is built on it,
@@ -34,6 +42,9 @@ final class Options
     ) {
         if ($retries < 0) {
             throw new InvalidArgumentException('retries cannot be negative');
+        }
+        if ($timeout < 0) {
+            throw new InvalidArgumentException('timeout cannot be negative');
         }
     }
 }

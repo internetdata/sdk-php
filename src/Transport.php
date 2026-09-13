@@ -27,6 +27,7 @@ final class Transport
     public function __construct(
         private readonly ClientInterface $http,
         private readonly int $retries,
+        private readonly float $timeout,
     ) {
     }
 
@@ -40,6 +41,10 @@ final class Transport
     /**
      * A GET whose body is read lazily, for the object storage link the download
      * endpoint hands out.
+     *
+     * The whole-request timeout is dropped and only the connect phase keeps it:
+     * 30s is a sane bound on a metadata call and the wrong one on a body that
+     * reaches gigabytes.
      *
      * Only the headers are awaited, so a retry here cannot duplicate bytes a
      * caller's destination already holds. Redirects are followed, unlike every
@@ -55,7 +60,12 @@ final class Transport
             $this->retries,
             0,
             0,
-            [RequestOptions::STREAM => true, RequestOptions::ALLOW_REDIRECTS => true],
+            [
+                RequestOptions::STREAM => true,
+                RequestOptions::ALLOW_REDIRECTS => true,
+                RequestOptions::TIMEOUT => 0,
+                RequestOptions::CONNECT_TIMEOUT => $this->timeout,
+            ],
             $errorMessage,
         )->wait();
     }
@@ -97,6 +107,10 @@ final class Transport
             // would pull a multi-gigabyte database into memory. Nothing this
             // client calls is meant to redirect.
             RequestOptions::ALLOW_REDIRECTS => false,
+            // Guzzle defaults both of these to 0, meaning unlimited, so without
+            // them a hung API holds the caller until the process is killed.
+            RequestOptions::TIMEOUT => $this->timeout,
+            RequestOptions::CONNECT_TIMEOUT => $this->timeout,
             ...$extraOptions,
         ];
         if ($delayMs > 0) {
