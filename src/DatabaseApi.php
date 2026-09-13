@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Utils;
 use InternetData\Internal\Api\DatabaseV2Api;
 use InternetData\Internal\Model\ChecksumsResponse;
+use InternetData\Internal\Model\DatabaseFormat as WireFormat;
 use InternetData\Internal\Model\DatabaseList;
 use InternetData\Internal\Model\DatabaseMetadata as WireDatabaseMetadata;
 use InternetData\Internal\Model\DownloadList;
@@ -74,7 +75,7 @@ final class DatabaseApi
      */
     public function checksums(string $id, string $format): Checksums
     {
-        $response = $this->transport->send($this->api->databaseChecksumV2Request($id, $format));
+        $response = $this->transport->send($this->api->databaseChecksumV2Request($id, WireFormat::from($format)));
         // The digests are nested one level down, under `checksums`. Unwrapping a
         // generated response type rather than a hand-written shape is what keeps
         // the depth honest; reading a top-level `sha256` returns nothing against
@@ -114,7 +115,7 @@ final class DatabaseApi
      */
     public function downloadUrl(string $id, string $format): string
     {
-        $response = $this->transport->send($this->api->downloadDatabaseV2Request($id, $format));
+        $response = $this->transport->send($this->api->downloadDatabaseV2Request($id, WireFormat::from($format)));
         $location = $response->getHeaderLine('Location');
         if ($response->getStatusCode() === 302 && $location !== '') {
             return $location;

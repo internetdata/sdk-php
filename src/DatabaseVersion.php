@@ -32,7 +32,7 @@ final class DatabaseVersion
             id: $w->getId(),
             version: $w->getVersion(),
             summary: $w->getSummary(),
-            formats: array_values($w->getFormats()),
+            formats: array_map(static fn ($f) => $f->value, array_values($w->getFormats())),
         );
     }
 }

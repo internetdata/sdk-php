@@ -51,7 +51,7 @@ final class Database
             base: $w->getBase(),
             name: $w->getName(),
             summary: $w->getSummary(),
-            standing: $w->getStanding(),
+            standing: $w->getStanding()->value,
             licenseType: $w->getLicenseType(),
             starts: Dates::immutable($w->getStarts()),
             expires: Dates::immutable($w->getExpires()),

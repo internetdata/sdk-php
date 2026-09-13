@@ -33,6 +33,9 @@ GENERATOR_IMAGE="${GENERATOR_IMAGE:-openapitools/openapi-generator-cli:v7.25.0}"
 SELECT="apis=DatabaseV2"
 SELECT="${SELECT},models=Database:DatabaseVersion:DatabaseMetadata:DatabaseMetadataColumn"
 SELECT="${SELECT}:DbChecksums:Download:Error:DatabaseList:DownloadList:ChecksumsResponse"
+# The two named enums. A schema reachable from a selected model is NOT pulled in
+# automatically, and the generated code references it by name regardless.
+SELECT="${SELECT}:DatabaseFormat:Standing"
 SELECT="${SELECT},supportingFiles"
 
 # Two escaping traps in one line. apiPackage and modelPackage are RELATIVE to
