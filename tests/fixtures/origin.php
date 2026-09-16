@@ -22,6 +22,28 @@ file_put_contents(
     FILE_APPEND,
 );
 
+// An API call that sends its headers and the start of a body, then nothing, or
+// then a byte every few milliseconds so that no single read ever waits long. A
+// deadline that stopped at the headers, or bounded each read, outlasts both.
+$stall = getenv('ORIGIN_STALL_SECONDS');
+$trickle = getenv('ORIGIN_TRICKLE_MS');
+if ($stall !== false || $trickle !== false) {
+    header('Content-Type: application/json');
+    header('Content-Length: 1024');
+    echo '{';
+    flush();
+    if ($stall !== false) {
+        sleep((int) $stall);
+        exit;
+    }
+    for ($i = 1; $i < 1024; $i++) {
+        usleep((int) $trickle * 1000);
+        echo ' ';
+        flush();
+    }
+    exit;
+}
+
 if ($path === '/api/v2/database/download') {
     header('Location: http://' . $_SERVER['HTTP_HOST'] . '/blob', true, 302);
     exit;

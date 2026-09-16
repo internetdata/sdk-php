@@ -25,7 +25,8 @@ final class Origin
     private readonly string $logPath;
 
     /**
-     * @param array{blobBytes?: int, storageStatus?: int, dieAfterBytes?: int, failFirst?: int} $options
+     * @param array{blobBytes?: int, storageStatus?: int, dieAfterBytes?: int, failFirst?: int,
+     *     stallSeconds?: int, trickleMs?: int} $options
      */
     public function __construct(array $options = [])
     {
@@ -44,6 +45,12 @@ final class Origin
         ];
         if (isset($options['dieAfterBytes'])) {
             $env['ORIGIN_DIE_AFTER'] = (string) $options['dieAfterBytes'];
+        }
+        if (isset($options['stallSeconds'])) {
+            $env['ORIGIN_STALL_SECONDS'] = (string) $options['stallSeconds'];
+        }
+        if (isset($options['trickleMs'])) {
+            $env['ORIGIN_TRICKLE_MS'] = (string) $options['trickleMs'];
         }
 
         $command = [

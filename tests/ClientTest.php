@@ -11,6 +11,7 @@ use InternetData\ErrorKind;
 use InternetData\InternetDataException;
 use InternetData\Options;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -264,6 +265,44 @@ final class ClientTest extends TestCase
         $transfer = $stub->options[1];
         $this->assertSame(0, $transfer[RequestOptions::TIMEOUT]);
         $this->assertSame(7.5, $transfer[RequestOptions::CONNECT_TIMEOUT]);
+    }
+
+    /**
+     * A body stalled after the headers, and one trickled a byte every 20 ms.
+     *
+     * @return array<string, array{array{stallSeconds?: int, trickleMs?: int}}>
+     */
+    public static function slowBodies(): array
+    {
+        return [
+            'stalled' => [['stallSeconds' => 5]],
+            'trickled' => [['trickleMs' => 20]],
+        ];
+    }
+
+    // Asserted on a real transport: a stub answers whatever it likes and never
+    // reaches a deadline over the body at all. The origin is slower than the
+    // bound, so a regression fails the timing assertion instead of hanging.
+    /** @param array{stallSeconds?: int, trickleMs?: int} $body */
+    #[DataProvider('slowBodies')]
+    public function testTheTimeoutBoundsTheWholeBodyNotJustTheHeaders(array $body): void
+    {
+        $origin = new Origin($body);
+        $client = new Client(new Options(apiKey: 'k', baseUrl: $origin->baseUrl, retries: 0, timeout: 0.25));
+        $started = microtime(true);
+        try {
+            $client->database->list();
+            $this->fail('a slow body was not cut off');
+        } catch (InternetDataException $e) {
+            $this->assertSame(ErrorKind::Network, $e->kind);
+            $this->assertTrue($e->isRetryable(), 'a timeout is worth another attempt');
+        } finally {
+            $elapsed = microtime(true) - $started;
+            $origin->stop();
+        }
+
+        $this->assertGreaterThanOrEqual(0.2, $elapsed, 'failed without waiting');
+        $this->assertLessThan(1.5, $elapsed, 'waited past its 0.25s bound');
     }
 
     public function testANegativeTimeoutIsRefused(): void
