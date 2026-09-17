@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class DatabaseTest extends TestCase
 {
     // The two smallest published databases, and the only ones the SDK CI
-    // organization licenses. If a licence changes, the listing assertion below
+    // organization licenses. If a license changes, the listing assertion below
     // fails first and names this constant.
     private const DATABASE_ID = 'bogon_ip_v1';
     private const FORMAT = 'csvgz';
@@ -88,7 +88,7 @@ final class DatabaseTest extends TestCase
     }
 
     /**
-     * A licence covers a database FAMILY, and the ids a download takes hang off
+     * A license covers a database FAMILY, and the ids a download takes hang off
      * `versions`. PHP is loud about a spec that has drifted from its service
      * where the other bindings are quiet: the generated getters are typed, so a
      * required field the payload does not carry is a TypeError out of
@@ -108,7 +108,7 @@ final class DatabaseTest extends TestCase
                 self::assertContains($database->licenseType, self::RIGHTS, "{$where}: undocumented right");
             }
             if ($database->standing === 'unlicensed') {
-                self::assertNull($database->licenseType, "{$where}: a right without a licence");
+                self::assertNull($database->licenseType, "{$where}: a right without a license");
             }
             self::assertNotEmpty($database->versions, "{$where}: no versions");
             foreach ($database->versions as $version) {
@@ -122,7 +122,7 @@ final class DatabaseTest extends TestCase
         }
 
         // The precondition every transfer below rests on, stated once and by
-        // name, so a licence change reads as a licence change rather than as a
+        // name, so a license change reads as a license change rather than as a
         // 403 out of the middle of a download test.
         self::assertContains(
             self::DATABASE_ID,
@@ -167,7 +167,7 @@ final class DatabaseTest extends TestCase
         } catch (InternetDataException $e) {
             self::assertSame(ErrorKind::Forbidden, $e->kind, $id);
             self::assertSame(403, $e->status, $id);
-            self::assertFalse($e->isRetryable(), 'a licence refusal is not worth retrying');
+            self::assertFalse($e->isRetryable(), 'a license refusal is not worth retrying');
             // The API says WHICH refusal this is (`{"rc":"NOT_LICENSED"}`).
             // Falling back to the status means the envelope went unread.
             self::assertContains($e->getMessage(), ['NOT_LICENSED', 'LICENSE_EXPIRED'], 'the rc went unread');

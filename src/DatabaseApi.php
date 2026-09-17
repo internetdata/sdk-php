@@ -37,7 +37,7 @@ final class DatabaseApi
     }
 
     /**
-     * Every database your organization may see, with its licence standing.
+     * Every database your organization may see, with its license standing.
      *
      * The catalog is not the same for every key and is never cached here: a
      * database commissioned for one customer is ABSENT from this list for

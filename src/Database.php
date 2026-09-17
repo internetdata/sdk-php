@@ -8,16 +8,16 @@ use DateTimeImmutable;
 use InternetData\Internal\Model\Database as WireDatabase;
 
 /**
- * One database FAMILY, with your organization's licence beside it.
+ * One database FAMILY, with your organization's license beside it.
  *
- * A licence is held against the family, while a download names one version, so
+ * A license is held against the family, while a download names one version, so
  * the ids you pass to `download`, `downloadBytes`, `downloadUrl`, `checksums`
  * and `metadata` come from `versions` rather than from here.
  */
 final class Database
 {
     public function __construct(
-        /** The family, e.g. `bogon_ip`. What a licence is held against. */
+        /** The family, e.g. `bogon_ip`. What a license is held against. */
         public readonly string $base,
         public readonly string $name,
         /** One line on what the newest version contains. */
@@ -28,12 +28,12 @@ final class Database
          */
         public readonly string $standing,
         /**
-         * What your licence permits: `evaluation`, `standard` or `redistribute`.
-         * Null when there is no licence.
+         * What your license permits: `evaluation`, `standard` or `redistribute`.
+         * Null when there is no license.
          */
         public readonly ?string $licenseType,
         public readonly ?DateTimeImmutable $starts,
-        /** Null when the licence has no end date, or when there is none. */
+        /** Null when the license has no end date, or when there is none. */
         public readonly ?DateTimeImmutable $expires,
         /**
          * Every published version of this family, oldest first.

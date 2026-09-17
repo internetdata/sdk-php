@@ -16,7 +16,7 @@ use OutOfBoundsException;
  * Access is granted by contract, one database family at a time, so everything
  * published today needs a key carrying the `db.download` scope. The key is
  * optional nonetheless, and a client built without one sends no `Authorization`
- * header at all: what this API serves without a licence is a product decision,
+ * header at all: what this API serves without a license is a product decision,
  * not the client's to refuse.
  */
 final class Client

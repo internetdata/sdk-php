@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 final class ClientTest extends TestCase
 {
     /**
-     * The key is optional because what this API serves without a licence is a
+     * The key is optional because what this API serves without a license is a
      * product decision, and a client that could not be built without one would
      * have to change shape to follow it. What must never go out is
      * `Authorization: Bearer ` with nothing after it, which reads as a wrong key

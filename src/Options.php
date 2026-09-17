@@ -17,7 +17,7 @@ final class Options
         /**
          * Your API key, carrying the `db.download` scope. Omit it to send no
          * `Authorization` header at all, which reaches only what this API
-         * serves without a licence.
+         * serves without a license.
          */
         public readonly ?string $apiKey = null,
         public readonly string $baseUrl = Client::DEFAULT_BASE_URL,
