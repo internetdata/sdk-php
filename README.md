@@ -13,7 +13,7 @@ The library downloads and verifies the IP, ASN and domain databases your organiz
 composer require internetdata/internetdata
 ```
 
-Requires PHP 8.1 or newer.
+Requires PHP 8.2 or newer.
 
 ## Usage
 
