@@ -15,8 +15,9 @@ declare(strict_types=1);
 //
 //   1. Nothing on Packagist satisfies the declared constraint. Before the first
 //      release there is no published artifact to test.
-//   2. The staging key is missing. That one skips from inside the suite, so the
-//      skip and its reason land in the PHPUnit output rather than here.
+//   2. The staging key is missing. That one skips the database tests from inside
+//      the suite, so the skip and its reason land in the PHPUnit output rather
+//      than here. The OAuth checks carry no key and run regardless.
 
 use InternetData\Integration\Staging;
 
