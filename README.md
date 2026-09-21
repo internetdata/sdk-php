@@ -30,7 +30,7 @@ foreach ($client->database->list() as $database) {
 }
 ```
 
-Every call hangs off `$client->database`, which is the whole of this API and is where the sibling VPNDetection library keeps the same seven calls.
+Every database call hangs off `$client->database`, which is where the sibling VPNDetection library keeps the same seven calls.
 
 A license is held against a database FAMILY, while a download names one version, so the ids you pass everywhere else come from `versions`:
 
@@ -127,6 +127,27 @@ $client = new Client(new Options(apiKey: $key, retries: 4));
 ### What your key can see
 
 `list` is the catalog **as the API served it for your key**, and the library keeps no copy of its own.
+
+### Sign in with OAuth (device flow)
+
+A program running on the person's own machine can let them sign in with a browser and pick one of their API keys, instead of asking them to paste it:
+
+```php
+$client = new Client();
+
+$device = $client->oauth->deviceAuthorization('your-client-id', [
+    'scope' => 'account.read apikeys.read apikeys.reveal',
+]);
+echo "Open {$device->verificationUri} and enter {$device->userCode}\n";
+
+$token = $client->oauth->pollDeviceToken('your-client-id', $device);
+if ($token->apikey === null) {
+    throw new RuntimeException("no API key came back: none was picked, or it can't be shown again");
+}
+$keyed = new Client(new Options(apiKey: $token->apikey));
+```
+
+A denied sign-in throws `OauthAccessDeniedException` and a code that ran out `OauthExpiredTokenException`. Client IDs are issued on request from support@internetdata.io, and `$client->oauth->revoke('your-client-id', $token->refreshToken)` signs the machine out again.
 
 ## Other Libraries
 

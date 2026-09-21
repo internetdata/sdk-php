@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace InternetData\Tests;
 
+use InternetData\Client;
+use InternetData\ErrorKind;
+use InternetData\InternetDataException;
+use InternetData\Options;
+use PHPUnit\Framework\Assert;
 use RuntimeException;
 
 /**
@@ -70,6 +75,40 @@ final class Origin
     {
         proc_terminate($this->process);
         proc_close($this->process);
+    }
+
+    /**
+     * One origin per call, because the built-in server serves one request at a
+     * time. It is slower than either bound, so a regression fails the timing
+     * assertion instead of hanging the suite.
+     *
+     * @param array{stallSeconds?: int, trickleMs?: int} $body
+     * @param callable(Client): mixed $call
+     */
+    public static function assertTimesOut(
+        array $body,
+        float $clientTimeout,
+        callable $call,
+        string $name,
+    ): void
+    {
+        $origin = new Origin($body);
+        $client = new Client(new Options(baseUrl: $origin->baseUrl, retries: 0, timeout: $clientTimeout));
+        $started = microtime(true);
+        try {
+            $answer = $call($client);
+        } catch (InternetDataException $e) {
+            $answer = $e;
+        } finally {
+            $elapsed = microtime(true) - $started;
+            $origin->stop();
+        }
+
+        Assert::assertInstanceOf(InternetDataException::class, $answer, "{$name} should have timed out");
+        Assert::assertSame(ErrorKind::Network, $answer->kind, $name);
+        Assert::assertTrue($answer->isRetryable(), "{$name}: a timeout is worth another attempt");
+        Assert::assertGreaterThanOrEqual(0.2, $elapsed, "{$name} failed without waiting");
+        Assert::assertLessThan(1.5, $elapsed, "{$name} waited past its 0.25s bound");
     }
 
     /**

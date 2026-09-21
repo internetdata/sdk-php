@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InternetData;
 
+use Closure;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions;
@@ -35,7 +36,32 @@ final class Transport
     {
         // The declared return type is what enforces the narrowing: `wait()` is
         // typed `mixed`, and strict_types turns anything else into a TypeError.
-        return $this->attempt($request, $this->retries, 0, 0)->wait();
+        return $this->sendAsync($request)->wait();
+    }
+
+    /**
+     * @param float|null $timeout Replaces the client's bound for every attempt of this call.
+     * @param (Closure(ResponseInterface): InternetDataException)|null $classify Reports a response
+     *        of 400 or more, in place of the API's own envelope; what it returns is retried exactly
+     *        when it says it is retryable.
+     */
+    public function sendAsync(
+        RequestInterface $request,
+        ?int $retries = null,
+        ?float $timeout = null,
+        ?Closure $classify = null,
+    ): PromiseInterface {
+        $bound = $timeout === null
+            ? []
+            : [RequestOptions::TIMEOUT => $timeout, RequestOptions::CONNECT_TIMEOUT => $timeout];
+        return $this->attempt(
+            $request,
+            $retries ?? $this->retries,
+            0,
+            0,
+            $bound,
+            $classify ?? static fn (ResponseInterface $r): InternetDataException => Errors::fromResponse($r),
+        );
     }
 
     /**
@@ -66,8 +92,23 @@ final class Transport
                 RequestOptions::TIMEOUT => 0,
                 RequestOptions::CONNECT_TIMEOUT => $this->timeout,
             ],
-            $errorMessage,
+            static fn (ResponseInterface $r): InternetDataException
+                => Errors::fromResponse($r, $errorMessage),
         )->wait();
+    }
+
+    /** @return array<string, mixed> */
+    public static function toArray(string $body, ?int $status = null): array
+    {
+        try {
+            $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw Errors::malformed($e->getMessage(), $status);
+        }
+        if (!is_array($decoded)) {
+            throw Errors::malformed('expected a JSON object', $status);
+        }
+        return $decoded;
     }
 
     /**
@@ -90,14 +131,17 @@ final class Transport
         return $model;
     }
 
-    /** @param array<string, mixed> $extraOptions */
+    /**
+     * @param array<string, mixed> $extraOptions
+     * @param Closure(ResponseInterface): InternetDataException $classify
+     */
     private function attempt(
         RequestInterface $request,
         int $left,
         int $attempt,
         int $delayMs,
-        array $extraOptions = [],
-        ?string $errorMessage = null,
+        array $extraOptions,
+        Closure $classify,
     ): PromiseInterface {
         $options = [
             // Errors are classified here rather than thrown by Guzzle, so the
@@ -121,22 +165,22 @@ final class Transport
 
         return $this->http->sendAsync($request, $options)->then(
             function (ResponseInterface $response) use (
-                $request, $left, $attempt, $extraOptions, $errorMessage,
+                $request, $left, $attempt, $extraOptions, $classify,
             ): mixed {
                 if ($response->getStatusCode() < 400) {
                     return $response;
                 }
-                $error = Errors::fromResponse($response, $errorMessage);
+                $error = $classify($response);
                 if ($left <= 0 || !$error->isRetryable()) {
                     throw $error;
                 }
                 return $this->attempt(
                     $request, $left - 1, $attempt + 1, self::delayFor($error, $attempt),
-                    $extraOptions, $errorMessage,
+                    $extraOptions, $classify,
                 );
             },
             function (mixed $reason) use (
-                $request, $left, $attempt, $extraOptions, $errorMessage,
+                $request, $left, $attempt, $extraOptions, $classify,
             ): PromiseInterface {
                 $error = Errors::coerce($reason);
                 if ($left <= 0 || !$error->isRetryable()) {
@@ -144,7 +188,7 @@ final class Transport
                 }
                 return $this->attempt(
                     $request, $left - 1, $attempt + 1, self::backoffMs($attempt),
-                    $extraOptions, $errorMessage,
+                    $extraOptions, $classify,
                 );
             },
         );

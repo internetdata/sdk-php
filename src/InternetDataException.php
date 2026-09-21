@@ -11,8 +11,10 @@ use Throwable;
  * Every failure the library reports.
  *
  * Unchecked, so a call drops into a callback or an array_map without a wrapper.
+ * Not final: an OAuth refusal is one of these too, so a catch-all still catches
+ * it.
  */
-final class InternetDataException extends RuntimeException
+class InternetDataException extends RuntimeException
 {
     public function __construct(
         public readonly ErrorKind $kind,
