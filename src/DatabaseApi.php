@@ -39,11 +39,10 @@ final class DatabaseApi
     /**
      * Every database your organization may see, with its license standing.
      *
-     * The catalog is not the same for every key and is never cached here: a
-     * database commissioned for one customer is ABSENT from this list for
-     * everyone else rather than present as `unlicensed`, so a listing taken with
-     * one key says nothing about what another key may see, and a listing taken
-     * an hour ago says nothing about a family licensed since.
+     * This is the server's answer for this key and is never cached here, so a
+     * listing taken with one key says nothing about what another key may see,
+     * and a listing taken an hour ago says nothing about a family licensed
+     * since.
      *
      * @return list<Database>
      * @throws InternetDataException
