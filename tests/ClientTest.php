@@ -194,6 +194,45 @@ final class ClientTest extends TestCase
         }
     }
 
+    /**
+     * Honored as given, 9223372036854775807 overflowed its milliseconds into a
+     * float and the call died with a raw TypeError, and 2147484 held it for 24.8
+     * days, from the API and object storage alike (2.2.1, measured 2026-09-25).
+     * Past 2**31 - 1 ms it waits the backoff instead, still a rate limit.
+     */
+    public function testARetryAfterPastTheBoundWaitsTheBackoff(): void
+    {
+        $cases = [
+            '2147483' => 2_147_483_000,
+            '2147484' => 250,
+            '9223372036854775' => 250,
+            '9223372036854775807' => 250,
+            '99999999999999999999' => 250,
+        ];
+        foreach ($cases as $retryAfter => $delay) {
+            $throttled = [
+                'status' => 429,
+                'headers' => ['Retry-After' => (string) $retryAfter],
+                'body' => ['rc' => 'RATE_LIMITED'],
+            ];
+            $stub = new Stub([
+                Stub::LIST => [$throttled, Stub::ok(['databases' => []])],
+                Stub::DOWNLOAD => [
+                    'status' => 302,
+                    'headers' => ['Location' => 'https://storage.invalid/blob'],
+                ],
+                '/blob' => [$throttled, ['status' => 200, 'body' => 'payload']],
+            ]);
+            $client = self::client($stub, retries: 1);
+
+            self::assertSame([], $client->database->list(), "API, Retry-After: {$retryAfter}");
+            $bytes = $client->database->downloadBytes('bogon_ip_v1', 'csvgz');
+            self::assertSame('payload', $bytes, "object storage, Retry-After: {$retryAfter}");
+            // The list and its retry, then the 302, the blob and the blob's retry.
+            self::assertSame([0, $delay, 0, 0, $delay], $stub->delays, "Retry-After: {$retryAfter}");
+        }
+    }
+
     public function testATransportFailureIsRetriedAndThenReportedAsNetwork(): void
     {
         $stub = new Stub([Stub::LIST => Stub::transportFailure()]);
@@ -309,6 +348,39 @@ final class ClientTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         new Options(timeout: -1);
+    }
+
+    /**
+     * Guzzle refused these only once a request was built, so the client and the
+     * call both took them and every call then failed, having sent nothing
+     * (2.2.1, measured 2026-09-25). Refused where set.
+     */
+    public function testATimeoutNoAttemptCanMeetIsRefusedWhereItIsSet(): void
+    {
+        $stub = new Stub(['/.well-known/oauth-authorization-server' => Stub::ok([
+            'issuer' => Client::DEFAULT_BASE_URL,
+            'authorization_endpoint' => Client::DEFAULT_BASE_URL . '/oauth/authorize',
+            'token_endpoint' => Client::DEFAULT_BASE_URL . '/oauth/token',
+        ])]);
+        $client = self::client($stub);
+        foreach ([NAN, INF, 0.0005, 9e15, 1e300] as $bad) {
+            foreach (['client' => fn () => new Options(timeout: $bad),
+                'call' => fn () => $client->oauth->metadata(['timeout' => $bad])] as $where => $set) {
+                try {
+                    $set();
+                    self::fail("{$where} took timeout {$bad}");
+                } catch (InvalidArgumentException $e) {
+                    self::assertStringContainsString('timeout', $e->getMessage());
+                }
+            }
+        }
+        self::assertCount(0, $stub->calls, 'and not one request was spent finding out');
+
+        foreach ([0, 0.001, 8.9e15] as $good) {
+            new Options(timeout: $good);
+            $issuer = $client->oauth->metadata(['timeout' => $good])->issuer;
+            self::assertSame(Client::DEFAULT_BASE_URL, $issuer, "timeout {$good}");
+        }
     }
 
     private static function client(Stub $stub, int $retries = 2): Client

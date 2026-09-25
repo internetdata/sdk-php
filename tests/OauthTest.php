@@ -192,6 +192,25 @@ final class OauthTest extends TestCase
         }
     }
 
+    // No corpus case: a deadline already behind the clock leaves a negative
+    // remainder, which is never the wait.
+    public function testAPollPastItsDeadlineWaitsNothingNeverANegativeTime(): void
+    {
+        $stub = new OauthStub([['status' => 400, 'body' => ['error' => 'authorization_pending']]]);
+        $oauth = self::client($stub)->oauth;
+        $stub->installClock($oauth);
+        $device = self::device([
+            'device_code' => 'mo_dc_poll', 'user_code' => 'BCDF-GHJK',
+            'verification_uri' => 'https://app.internetdata.io/device', 'expires_in' => -3, 'interval' => 1,
+        ]);
+
+        $outcome = self::settle(static fn (): mixed => $oauth->pollDeviceToken('internetdata-cli', $device));
+
+        self::assertSame([0.0], $stub->waits);
+        self::assertCount(0, $stub->requests);
+        self::assertOutcome($outcome, ['type' => 'expiredToken', 'status' => null], 'expires_in -3');
+    }
+
     public function testAFailedAnswerIsAnOauthRefusalOnlyWhenItIsOne(): void
     {
         foreach (self::$corpus['errors']['cases'] as $case) {
@@ -233,7 +252,11 @@ final class OauthTest extends TestCase
             $outcome = self::settle(static fn (): mixed => $oauth->pollDeviceToken($case['clientId'], $device));
 
             $name = $case['name'];
-            self::assertSame($case['expect']['waits'], $stub->waits, "{$name}: waits, in seconds");
+            self::assertSame(
+                array_map(floatval(...), $case['expect']['waits']),
+                $stub->waits,
+                "{$name}: waits, in seconds",
+            );
             self::assertCount($case['expect']['requests'], $stub->requests, "{$name}: requests sent");
             $form = [
                 'client_id' => $case['clientId'],
@@ -267,6 +290,25 @@ final class OauthTest extends TestCase
         self::assertCount(1, $stub->requests);
         self::assertGreaterThanOrEqual(0.95, $elapsed, 'the first poll did not wait its interval');
         self::assertLessThan(2.5, $elapsed);
+    }
+
+    // The time left is rarely whole seconds here, so a sleep dropping the fraction
+    // polls again short of the deadline; only such a poll reaches the approval.
+    public function testAPollOnTheRealClockSleepsTheFractionLeftBeforeItsDeadline(): void
+    {
+        $pending = ['status' => 400, 'body' => ['error' => 'authorization_pending']];
+        $stub = new OauthStub([$pending, ['status' => 200, 'body' => self::EVERY_REQUIRED_MEMBER]], 2);
+        $device = new DeviceAuthorization('mo_dc_x', 'BCDF-GHJK', 'https://app.example.test/device', 2, 1);
+        $started = microtime(true);
+
+        $outcome = self::settle(static fn (): mixed
+            => self::client($stub)->oauth->pollDeviceToken('internetdata-cli', $device));
+
+        $elapsed = microtime(true) - $started;
+        self::assertCount(1, $stub->requests, 'polled again before the deadline');
+        self::assertOutcome($outcome, ['type' => 'expiredToken', 'status' => null], 'expires_in 2');
+        self::assertGreaterThanOrEqual(1.95, $elapsed, 'expired before its deadline');
+        self::assertLessThan(3.5, $elapsed);
     }
 
     public function testEveryOauthCallTakesAPerCallTimeoutBelowTheClients(): void
