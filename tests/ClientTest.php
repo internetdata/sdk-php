@@ -137,6 +137,7 @@ final class ClientTest extends TestCase
                 'dataset_id' => 'bogon_ip_v1',
                 'format' => 'mmdb',
                 'outcome' => 'ok',
+                'sample' => false,
                 'bytes' => 3524,
                 'http_status' => 302,
                 'apikey_id' => 'ak_1',
@@ -148,6 +149,7 @@ final class ClientTest extends TestCase
                 'dataset_id' => 'tor_ip_v1',
                 'format' => 'csvgz',
                 'outcome' => 'denied',
+                'sample' => true,
                 'bytes' => null,
                 'http_status' => 403,
                 'apikey_id' => null,
@@ -167,6 +169,7 @@ final class ClientTest extends TestCase
         self::assertSame('denied', $got[1]->outcome);
         self::assertNull($got[1]->bytes, 'a refusal moved no bytes, which is not the same as zero');
         self::assertNull($got[1]->apiKeyId);
+        self::assertSame([false, true], [$got[0]->sample, $got[1]->sample]);
         self::assertSame(['limit' => '25'], $stub->queryOf(0));
     }
 

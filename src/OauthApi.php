@@ -35,6 +35,7 @@ final class OauthApi
         'token_endpoint_auth_methods_supported' => ['list', false],
         'authorization_response_iss_parameter_supported' => ['bool', false],
         'service_documentation' => ['string', false],
+        'client_id_metadata_document_supported' => ['bool', false],
     ];
 
     private const DEVICE_AUTHORIZATION = [
@@ -111,6 +112,7 @@ final class OauthApi
             authorizationResponseIssParameterSupported:
                 $m['authorization_response_iss_parameter_supported'] ?? null,
             serviceDocumentation: $m['service_documentation'] ?? null,
+            clientIdMetadataDocumentSupported: $m['client_id_metadata_document_supported'] ?? null,
         );
     }
 

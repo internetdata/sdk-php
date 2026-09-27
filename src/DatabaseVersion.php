@@ -22,6 +22,12 @@ final class DatabaseVersion
          * @var list<string>
          */
         public readonly array $formats,
+        /**
+         * The formats an evaluation sample is published in, or null when none is.
+         *
+         * @var list<string>|null
+         */
+        public readonly ?array $sampleFormats = null,
     ) {
     }
 
@@ -33,6 +39,9 @@ final class DatabaseVersion
             version: $w->getVersion(),
             summary: $w->getSummary(),
             formats: array_map(static fn ($f) => $f->value, array_values($w->getFormats())),
+            sampleFormats: $w->getSampleFormats() === null
+                ? null
+                : array_map(static fn ($f) => $f->value, array_values($w->getSampleFormats())),
         );
     }
 }

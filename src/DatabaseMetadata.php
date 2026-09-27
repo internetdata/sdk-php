@@ -42,6 +42,14 @@ final class DatabaseMetadata
          * @var array<string, int>
          */
         public readonly array $size,
+        /**
+         * Bytes per format of the evaluation sample, where one is published.
+         *
+         * @var array<string, int>|null
+         */
+        public readonly ?array $sampleSize = null,
+        /** Row count in the evaluation sample, where one is published. */
+        public readonly ?int $sampleEntries = null,
     ) {
     }
 
@@ -60,6 +68,8 @@ final class DatabaseMetadata
             schema: $schema,
             sample: self::rows($w->getSample() ?? []),
             size: $w->getSize(),
+            sampleSize: $w->getSampleSize(),
+            sampleEntries: $w->getSampleEntries(),
         );
     }
 

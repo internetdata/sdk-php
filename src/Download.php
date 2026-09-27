@@ -27,6 +27,8 @@ final class Download
         public readonly ?string $clientIp,
         public readonly ?string $userAgent,
         public readonly DateTimeImmutable $created,
+        /** The evaluation sample rather than the database itself. */
+        public readonly bool $sample = false,
     ) {
     }
 
@@ -43,6 +45,7 @@ final class Download
             clientIp: $w->getClientIp(),
             userAgent: $w->getUserAgent(),
             created: Dates::required($w->getCreated()),
+            sample: $w->getSample(),
         );
     }
 }
