@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.4.0 - 2026-09-29
+
+### Features
+
+- Add the authorization code sign-in, with PKCE ([`89af9ae`](https://github.com/internetdata/sdk-php/commit/89af9aee7f75c8d396126eedb850c10f500e33a1))
+
 ## 2.3.1 - 2026-09-29
 
 ### Fixes
