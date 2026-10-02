@@ -5,7 +5,7 @@
 
 The official PHP client library for the [InternetData](https://internetdata.io) database API.
 
-It downloads and verifies the IP, ASN and domain databases your organization is licensed for, and tells you what is in each one before you fetch it.
+It downloads and verifies the IP and ASN databases your organization is licensed for, and tells you what is in each one before you fetch it.
 
 ## Getting Started
 
@@ -173,7 +173,7 @@ There are official InternetData client libraries available for many languages in
 
 ## About InternetData
 
-IP, ASN and Domain data to reveal unique insights about the internet. APIs, databases and live feeds available.
+Geolocation, anonymity, ownership and network databases for IP addresses and AS numbers, licensed as files you download and query yourself.
 
 [<img src="https://s3.internetdata.io/internetdata-public/brand/mark.svg" alt="InternetData" height="64"/>](https://internetdata.io/)
 

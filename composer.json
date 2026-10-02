@@ -1,6 +1,6 @@
 {
     "name": "internetdata/internetdata",
-    "description": "Official PHP client library for the InternetData API. Download and verify licensed IP, ASN and domain databases.",
+    "description": "Official PHP client library for the InternetData API. Download and verify licensed IP and ASN databases.",
     "type": "library",
     "license": "MIT",
     "homepage": "https://internetdata.io",
