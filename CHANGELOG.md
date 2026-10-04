@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.4.1 - 2026-10-04
+
+### Fixes
+
+- Re-pin the spec to 2026.10.03: metadata needs no license ([`614b615`](https://github.com/internetdata/sdk-php/commit/614b615b3e37a9ef76f43d9e1dbf29bf3cd5f3d7))
+
 ## 2.4.0 - 2026-09-29
 
 ### Features
