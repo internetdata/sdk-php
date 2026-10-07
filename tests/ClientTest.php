@@ -236,6 +236,53 @@ final class ClientTest extends TestCase
         }
     }
 
+    /**
+     * Read after the retried attempt, an answer that was not the shape the models
+     * declare escaped as a raw TypeError or InvalidArgumentException, and one that
+     * was not JSON at all was never retried (2.4.1, measured 2026-10-07).
+     */
+    public function testAnAnswerACallCannotReadIsARetriedServerError(): void
+    {
+        $calls = [
+            Stub::LIST => static fn (Client $c) => $c->database->list(),
+            Stub::METADATA => static fn (Client $c) => $c->database->metadata('bogon_ip_v1'),
+            Stub::CHECKSUM => static fn (Client $c) => $c->database->checksums('bogon_ip_v1', 'csvgz'),
+            Stub::DOWNLOADS => static fn (Client $c) => $c->database->downloads(),
+        ];
+        $bodies = [
+            'an HTML page' => ['<html>gateway</html>', 'text/html'],
+            'a cut-off body' => ['{"databases":[', 'application/json'],
+            'an empty body' => ['', 'application/json'],
+            'an array' => ['[]', 'application/json'],
+            'a string' => ['"x"', 'application/json'],
+            'null' => ['null', 'application/json'],
+            'an empty object' => ['{}', 'application/json'],
+            'members of the wrong type' => [
+                '{"databases":{},"checksums":[],"downloads":"x","id":"x"}', 'application/json',
+            ],
+            'entries without their members' => [
+                '{"databases":[{}],"checksums":{},"downloads":[{}],"id":"x","format":"csvgz"}', 'application/json',
+            ],
+        ];
+        foreach ($calls as $path => $call) {
+            foreach ($bodies as $name => [$body, $type]) {
+                $stub = new Stub([$path => [
+                    'status' => 200,
+                    'headers' => ['Content-Type' => $type],
+                    'body' => $body,
+                ]]);
+                try {
+                    $call(self::client($stub, retries: 2));
+                    self::fail("{$path}, {$name}: returned an answer");
+                } catch (InternetDataException $e) {
+                    self::assertSame(ErrorKind::ServerError, $e->kind, "{$path}, {$name}");
+                    self::assertSame(200, $e->status, "{$path}, {$name}: the status");
+                }
+                self::assertCount(3, $stub->calls, "{$path}, {$name}: retried like an outage");
+            }
+        }
+    }
+
     public function testATransportFailureIsRetriedAndThenReportedAsNetwork(): void
     {
         $stub = new Stub([Stub::LIST => Stub::transportFailure()]);

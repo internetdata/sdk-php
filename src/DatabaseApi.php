@@ -49,9 +49,13 @@ final class DatabaseApi
      */
     public function list(): array
     {
-        $response = $this->transport->send($this->api->listDatabasesRequest());
-        $wire = Transport::toModel($response, DatabaseList::class);
-        return array_map(Database::fromWire(...), $wire->getDatabases());
+        return $this->transport->read(
+            $this->api->listDatabasesRequest(),
+            static fn (ResponseInterface $r): array => array_map(
+                Database::fromWire(...),
+                Transport::toModel($r, DatabaseList::class)->getDatabases(),
+            ),
+        );
     }
 
     /**
@@ -62,8 +66,11 @@ final class DatabaseApi
      */
     public function metadata(string $id): DatabaseMetadata
     {
-        $response = $this->transport->send($this->api->databaseMetadataV2Request($id));
-        return DatabaseMetadata::fromWire(Transport::toModel($response, WireDatabaseMetadata::class));
+        return $this->transport->read(
+            $this->api->databaseMetadataV2Request($id),
+            static fn (ResponseInterface $r): DatabaseMetadata
+                => DatabaseMetadata::fromWire(Transport::toModel($r, WireDatabaseMetadata::class)),
+        );
     }
 
     /**
@@ -74,13 +81,15 @@ final class DatabaseApi
      */
     public function checksums(string $id, string $format): Checksums
     {
-        $response = $this->transport->send($this->api->databaseChecksumV2Request($id, WireFormat::from($format)));
         // The digests are nested one level down, under `checksums`. Unwrapping a
         // generated response type rather than a hand-written shape is what keeps
         // the depth honest; reading a top-level `sha256` returns nothing against
         // a perfectly healthy API.
-        $wire = Transport::toModel($response, ChecksumsResponse::class);
-        return Checksums::fromWire($wire->getChecksums());
+        return $this->transport->read(
+            $this->api->databaseChecksumV2Request($id, WireFormat::from($format)),
+            static fn (ResponseInterface $r): Checksums
+                => Checksums::fromWire(Transport::toModel($r, ChecksumsResponse::class)->getChecksums()),
+        );
     }
 
     /**
@@ -95,9 +104,13 @@ final class DatabaseApi
      */
     public function downloads(int $limit = 50): array
     {
-        $response = $this->transport->send($this->api->listDownloadsRequest($limit));
-        $wire = Transport::toModel($response, DownloadList::class);
-        return array_map(Download::fromWire(...), $wire->getDownloads());
+        return $this->transport->read(
+            $this->api->listDownloadsRequest($limit),
+            static fn (ResponseInterface $r): array => array_map(
+                Download::fromWire(...),
+                Transport::toModel($r, DownloadList::class)->getDownloads(),
+            ),
+        );
     }
 
     /**

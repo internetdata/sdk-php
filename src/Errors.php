@@ -71,10 +71,17 @@ final class Errors
         return new InternetDataException(ErrorKind::Network, self::describe($reason));
     }
 
-    public static function malformed(string $detail, ?int $status): InternetDataException
-    {
+    public static function malformed(
+        string $detail,
+        ?int $status,
+        ?Throwable $previous = null,
+    ): InternetDataException {
         return new InternetDataException(
-            ErrorKind::ServerError, sprintf('could not read the API response: %s', $detail), $status,
+            ErrorKind::ServerError,
+            sprintf('could not read the API response: %s', $detail),
+            $status,
+            null,
+            $previous,
         );
     }
 
