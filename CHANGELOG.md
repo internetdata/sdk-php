@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.4.2 - 2026-10-07
+
+### Fixes
+
+- Retry a database answer the call cannot read, as a server_error ([`a59828d`](https://github.com/internetdata/sdk-php/commit/a59828d1d0bbc81fb88a2f29d7ca26fa2739680c))
+- Read a Retry-After as seconds or an HTTP date, and nothing else ([`d2d9c89`](https://github.com/internetdata/sdk-php/commit/d2d9c89e7a72100eb328d3445fcc930057228db1))
+
 ## 2.4.1 - 2026-10-04
 
 ### Fixes
