@@ -316,7 +316,9 @@ final class ClientTest extends TestCase
     /**
      * Read after the retried attempt, an answer that was not the shape the models
      * declare escaped as a raw TypeError or InvalidArgumentException, and one that
-     * was not JSON at all was never retried (2.4.1, measured 2026-10-07).
+     * was not JSON at all was never retried (2.4.1, measured 2026-10-07). The
+     * download link's answer was still read after its attempt, and sent once,
+     * through 2.4.2.
      */
     public function testAnAnswerACallCannotReadIsARetriedServerError(): void
     {
@@ -325,6 +327,7 @@ final class ClientTest extends TestCase
             Stub::METADATA => static fn (Client $c) => $c->database->metadata('bogon_ip_v1'),
             Stub::CHECKSUM => static fn (Client $c) => $c->database->checksums('bogon_ip_v1', 'csvgz'),
             Stub::DOWNLOADS => static fn (Client $c) => $c->database->downloads(),
+            Stub::DOWNLOAD => static fn (Client $c) => $c->database->downloadUrl('bogon_ip_v1', 'csvgz'),
         ];
         $bodies = [
             'an HTML page' => ['<html>gateway</html>', 'text/html'],

@@ -127,15 +127,19 @@ final class DatabaseApi
      */
     public function downloadUrl(string $id, string $format): string
     {
-        $response = $this->transport->send($this->api->downloadDatabaseV2Request($id, WireFormat::from($format)));
-        $location = $response->getHeaderLine('Location');
-        if ($response->getStatusCode() === 302 && $location !== '') {
-            return $location;
-        }
-        throw new InternetDataException(
-            ErrorKind::ServerError,
-            'expected a redirect to object storage',
-            $response->getStatusCode(),
+        return $this->transport->read(
+            $this->api->downloadDatabaseV2Request($id, WireFormat::from($format)),
+            static function (ResponseInterface $r): string {
+                $location = $r->getHeaderLine('Location');
+                if ($r->getStatusCode() === 302 && $location !== '') {
+                    return $location;
+                }
+                throw new InternetDataException(
+                    ErrorKind::ServerError,
+                    'expected a redirect to object storage',
+                    $r->getStatusCode(),
+                );
+            },
         );
     }
 
