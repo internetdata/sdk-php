@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.4.3 - 2026-10-08
+
+### Fixes
+
+- Retry an unreadable download link answer, as a server_error ([`42d0be9`](https://github.com/internetdata/sdk-php/commit/42d0be9a99af70dcc13180c7ed6703680b1ee7ac))
+
 ## 2.4.2 - 2026-10-07
 
 ### Fixes
