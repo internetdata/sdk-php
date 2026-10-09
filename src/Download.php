@@ -29,6 +29,12 @@ final class Download
         public readonly DateTimeImmutable $created,
         /** The evaluation sample rather than the database itself. */
         public readonly bool $sample = false,
+        /**
+         * Taken under the Open license rather than one of your licenses: an Open
+         * database downloaded while your organization held no license in term
+         * for it.
+         */
+        public readonly bool $open = false,
     ) {
     }
 
@@ -46,6 +52,7 @@ final class Download
             userAgent: $w->getUserAgent(),
             created: Dates::required($w->getCreated()),
             sample: $w->getSample(),
+            open: $w->getOpen(),
         );
     }
 }

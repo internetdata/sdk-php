@@ -138,6 +138,7 @@ final class ClientTest extends TestCase
                 'format' => 'mmdb',
                 'outcome' => 'ok',
                 'sample' => false,
+                'open' => true,
                 'bytes' => 3524,
                 'http_status' => 302,
                 'apikey_id' => 'ak_1',
@@ -150,6 +151,7 @@ final class ClientTest extends TestCase
                 'format' => 'csvgz',
                 'outcome' => 'denied',
                 'sample' => true,
+                'open' => false,
                 'bytes' => null,
                 'http_status' => 403,
                 'apikey_id' => null,
@@ -170,6 +172,7 @@ final class ClientTest extends TestCase
         self::assertNull($got[1]->bytes, 'a refusal moved no bytes, which is not the same as zero');
         self::assertNull($got[1]->apiKeyId);
         self::assertSame([false, true], [$got[0]->sample, $got[1]->sample]);
+        self::assertSame([true, false], [$got[0]->open, $got[1]->open]);
         self::assertSame(['limit' => '25'], $stub->queryOf(0));
     }
 
@@ -379,6 +382,34 @@ final class ClientTest extends TestCase
 
     // Every value object is handed out of a mapping the caller does not own, so
     // it must not be writable from underneath whoever else holds it.
+    // An Open family downloads whatever its standing, which stays the
+    // organization's own.
+    public function testTheListingCarriesOpen(): void
+    {
+        $family = static fn (string $base, string $standing, bool $open): array => [
+            'base' => $base,
+            'name' => $base,
+            'summary' => 'one line',
+            'standing' => $standing,
+            'open' => $open,
+            'license_type' => $standing === 'licensed' ? 'standard' : null,
+            'starts' => null,
+            'expires' => null,
+            'versions' => [['id' => "{$base}_v1", 'version' => 1, 'summary' => 'v1', 'formats' => ['csvgz']]],
+        ];
+        $stub = new Stub([Stub::LIST => Stub::ok(['databases' => [
+            $family('asn', 'unlicensed', true),
+            $family('vpn_ip', 'licensed', false),
+        ]])]);
+
+        $got = self::client($stub)->database->list();
+
+        self::assertSame([[true, 'unlicensed'], [false, 'licensed']], [
+            [$got[0]->open, $got[0]->standing],
+            [$got[1]->open, $got[1]->standing],
+        ]);
+    }
+
     public function testTheValueObjectsAreReadonly(): void
     {
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => [[
@@ -386,6 +417,7 @@ final class ClientTest extends TestCase
             'name' => 'Bogon IP',
             'summary' => 'Reserved ranges.',
             'standing' => 'licensed',
+            'open' => false,
             'license_type' => 'standard',
             'starts' => null,
             'expires' => null,

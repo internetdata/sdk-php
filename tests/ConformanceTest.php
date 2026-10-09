@@ -252,6 +252,7 @@ final class ConformanceTest extends TestCase
             'name' => ucwords(str_replace('_', ' ', $base)),
             'summary' => "everything in {$base}",
             'standing' => $standing,
+            'open' => false,
             'license_type' => $licenseType,
             'starts' => '2026-01-01T00:00:00Z',
             'expires' => null,

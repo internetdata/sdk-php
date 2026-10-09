@@ -41,6 +41,12 @@ final class Database
          * @var list<DatabaseVersion>
          */
         public readonly array $versions,
+        /**
+         * An Open database: any organization downloads it, and fetches its
+         * checksums, with no license, under CC BY-SA 4.0. `standing` still
+         * reports your own license, which grants more where you hold one.
+         */
+        public readonly bool $open = false,
     ) {
     }
 
@@ -56,6 +62,7 @@ final class Database
             starts: Dates::immutable($w->getStarts()),
             expires: Dates::immutable($w->getExpires()),
             versions: array_map(DatabaseVersion::fromWire(...), $w->getVersions()),
+            open: $w->getOpen(),
         );
     }
 }
