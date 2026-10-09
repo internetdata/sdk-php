@@ -2,6 +2,16 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.5.0 - 2026-10-09
+
+### Features
+
+- Re-pin the spec to 2026.10.08, adding the Open databases' open flag ([`d9671ee`](https://github.com/internetdata/sdk-php/commit/d9671eec88363cd8803556a43bd9a3924f509560))
+
+### Fixes
+
+- Carry renews_at and notice_due_at on Database ([`93266f1`](https://github.com/internetdata/sdk-php/commit/93266f1f8c2fb1617cfac9d20944d18aaec85253))
+
 ## 2.4.3 - 2026-10-08
 
 ### Fixes
