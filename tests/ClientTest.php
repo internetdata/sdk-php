@@ -380,13 +380,60 @@ final class ClientTest extends TestCase
         self::assertCount(3, $stub->calls);
     }
 
+    /**
+     * The staleness pin on the public classes: they read the members they name
+     * and nothing else, so a member a re-pin adds reaches the generated model
+     * while the class a caller holds never hears of it. `renews_at` and
+     * `notice_due_at` sat that way until 2.5.0.
+     *
+     * @return iterable<string, array{class-string, class-string}>
+     */
+    public static function wireModels(): iterable
+    {
+        yield 'Database' => [\InternetData\Internal\Model\Database::class, \InternetData\Database::class];
+        yield 'DatabaseVersion' => [
+            \InternetData\Internal\Model\DatabaseVersion::class,
+            \InternetData\DatabaseVersion::class,
+        ];
+        yield 'DatabaseMetadata' => [
+            \InternetData\Internal\Model\DatabaseMetadata::class,
+            \InternetData\DatabaseMetadata::class,
+        ];
+        yield 'DatabaseMetadataColumn' => [
+            \InternetData\Internal\Model\DatabaseMetadataColumn::class,
+            \InternetData\DatabaseMetadataColumn::class,
+        ];
+        yield 'Download' => [\InternetData\Internal\Model\Download::class, \InternetData\Download::class];
+    }
+
+    /**
+     * @param class-string $wire
+     * @param class-string $ours
+     */
+    #[DataProvider('wireModels')]
+    public function testEveryMemberThePinnedSpecServesIsOnThePublicClass(string $wire, string $ours): void
+    {
+        $renamed = ['dataset_id' => 'databaseId', 'apikey_id' => 'apiKeyId'];
+        $served = array_map(
+            static fn (string $member): string => $renamed[$member]
+                ?? lcfirst(str_replace('_', '', ucwords($member, '_'))),
+            array_keys($wire::openAPITypes()),
+        );
+        $modeled = array_map(
+            static fn (\ReflectionParameter $p): string => $p->getName(),
+            (new \ReflectionMethod($ours, '__construct'))->getParameters(),
+        );
+
+        self::assertSame([], array_values(array_diff($served, $modeled)), "{$ours} lacks what the spec serves");
+    }
+
     // Every value object is handed out of a mapping the caller does not own, so
     // it must not be writable from underneath whoever else holds it.
     // An Open family downloads whatever its standing, which stays the
-    // organization's own.
-    public function testTheListingCarriesOpen(): void
+    // organization's own; a rolling license's dates come through beside it.
+    public function testTheListingCarriesOpenAndTheRenewalDates(): void
     {
-        $family = static fn (string $base, string $standing, bool $open): array => [
+        $family = static fn (string $base, string $standing, bool $open, ?string $renews, ?string $notice): array => [
             'base' => $base,
             'name' => $base,
             'summary' => 'one line',
@@ -395,11 +442,13 @@ final class ClientTest extends TestCase
             'license_type' => $standing === 'licensed' ? 'standard' : null,
             'starts' => null,
             'expires' => null,
+            'renews_at' => $renews,
+            'notice_due_at' => $notice,
             'versions' => [['id' => "{$base}_v1", 'version' => 1, 'summary' => 'v1', 'formats' => ['csvgz']]],
         ];
         $stub = new Stub([Stub::LIST => Stub::ok(['databases' => [
-            $family('asn', 'unlicensed', true),
-            $family('vpn_ip', 'licensed', false),
+            $family('asn', 'unlicensed', true, null, null),
+            $family('vpn_ip', 'licensed', false, '2027-01-01T00:00:00Z', '2026-10-02T00:00:00Z'),
         ]])]);
 
         $got = self::client($stub)->database->list();
@@ -408,6 +457,10 @@ final class ClientTest extends TestCase
             [$got[0]->open, $got[0]->standing],
             [$got[1]->open, $got[1]->standing],
         ]);
+        self::assertNull($got[0]->renewsAt);
+        self::assertNull($got[0]->noticeDueAt);
+        self::assertSame('2027-01-01', $got[1]->renewsAt?->format('Y-m-d'));
+        self::assertSame('2026-10-02', $got[1]->noticeDueAt?->format('Y-m-d'));
     }
 
     public function testTheValueObjectsAreReadonly(): void

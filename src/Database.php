@@ -42,6 +42,18 @@ final class Database
          */
         public readonly array $versions,
         /**
+         * When a rolling license next renews. Null when the license has no
+         * defined term, when `expires` sets a hard stop instead, and when there
+         * is none.
+         */
+        public readonly ?DateTimeImmutable $renewsAt = null,
+        /**
+         * The last day notice of non-renewal can be given for the term ending at
+         * `renewsAt`. Null whenever that is, and when the agreement records no
+         * notice period.
+         */
+        public readonly ?DateTimeImmutable $noticeDueAt = null,
+        /**
          * An Open database: any organization downloads it, and fetches its
          * checksums, with no license, under CC BY-SA 4.0. `standing` still
          * reports your own license, which grants more where you hold one.
@@ -62,6 +74,8 @@ final class Database
             starts: Dates::immutable($w->getStarts()),
             expires: Dates::immutable($w->getExpires()),
             versions: array_map(DatabaseVersion::fromWire(...), $w->getVersions()),
+            renewsAt: Dates::immutable($w->getRenewsAt()),
+            noticeDueAt: Dates::immutable($w->getNoticeDueAt()),
             open: $w->getOpen(),
         );
     }
