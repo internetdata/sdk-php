@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.5.2 - 2026-10-10
+
+### Fixes
+
+- Send the API key trimmed, none for blanks, and refuse a control character ([`4881642`](https://github.com/internetdata/sdk-php/commit/4881642ed72a35d790574977a2e05227c39da768))
+- Read a Retry-After date only when it names a real day ([`b7e996c`](https://github.com/internetdata/sdk-php/commit/b7e996c0fcf8e71b3a4ee9ed66739d9c80778c4a))
+
 ## 2.5.1 - 2026-10-10
 
 ### Fixes
