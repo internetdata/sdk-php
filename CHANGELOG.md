@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.5.1 - 2026-10-10
+
+### Fixes
+
+- Re-pin the spec to 2026.10.09: rotating a key needs apikeys.reveal ([`5e813dc`](https://github.com/internetdata/sdk-php/commit/5e813dc4aa2615c52b6b9ae645a5067022c196f7))
+
 ## 2.5.0 - 2026-10-09
 
 ### Features
