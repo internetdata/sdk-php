@@ -29,7 +29,7 @@ final class ClientTest extends TestCase
      */
     public function testAKeylessClientSendsNoAuthorizationHeader(): void
     {
-        foreach ([new Options(), new Options(apiKey: '')] as $i => $options) {
+        foreach ([new Options(), new Options(apiKey: ''), new Options(apiKey: '   '), new Options(apiKey: "\t")] as $i => $options) {
             $stub = new Stub([Stub::LIST => Stub::ok(['databases' => []])]);
             $client = new Client(new Options(
                 apiKey: $options->apiKey,
@@ -46,6 +46,28 @@ final class ClientTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         new Options(apiKey: 'k', retries: -1);
+    }
+
+    public function testAKeyHoldingAControlCharacterIsRefusedWhereItIsSet(): void
+    {
+        foreach (["k\ney", "k\x01ey", "key\r\nX-Injected: 1", "k\x7Fey"] as $apiKey) {
+            try {
+                new Options(apiKey: $apiKey);
+                self::fail('accepted ' . json_encode($apiKey));
+            } catch (InvalidArgumentException) {
+                self::addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function testAKeyIsSentWithoutTheBlanksAroundIt(): void
+    {
+        $stub = new Stub([Stub::LIST => Stub::ok(['databases' => []])]);
+        $client = new Client(new Options(apiKey: " secret-key\t", httpClient: $stub->client));
+
+        $client->database->list();
+
+        self::assertSame('Bearer secret-key', $stub->requests[0]->getHeaderLine('Authorization'));
     }
 
     // Deleting the auth header passed a whole suite in another language until

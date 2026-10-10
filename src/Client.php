@@ -44,9 +44,12 @@ final class Client
             ->setHost(rtrim($options->baseUrl, '/'))
             ->setUserAgent(self::userAgent());
         // Set only when there is one: `Authorization: Bearer ` with nothing
-        // after it reads as a wrong key rather than as no key.
-        if ($options->apiKey !== null && $options->apiKey !== '') {
-            $config->setAccessToken($options->apiKey);
+        // after it reads as a wrong key rather than as no key, and a key of
+        // blanks alone sent just that until it was trimmed (2.5.1, measured
+        // 2026-10-10).
+        $apiKey = trim($options->apiKey ?? '');
+        if ($apiKey !== '') {
+            $config->setAccessToken($apiKey);
         }
 
         $http = $options->httpClient ?? new GuzzleClient();
