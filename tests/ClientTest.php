@@ -269,7 +269,8 @@ final class ClientTest extends TestCase
      */
     public function testARetryAfterThatIsNeitherSecondsNorAnHttpDateIsASpentQuota(): void
     {
-        foreach (['-1', 'x', 'tomorrow', '+1 day', 'noon', 'next week', 'soon', '1e400'] as $retryAfter) {
+        $invalidDays = ['Sun, 31 Nov 2099 08:49:37 GMT', 'Mon, 30 Feb 2099 08:49:37 GMT', 'Sun Nov 31 08:49:37 2099'];
+        foreach (['-1', 'x', 'tomorrow', '+1 day', 'noon', 'next week', 'soon', '1e400', ...$invalidDays] as $retryAfter) {
             $refused = [
                 'status' => 429,
                 'headers' => ['Retry-After' => $retryAfter],

@@ -131,6 +131,12 @@ final class Errors
         } catch (Exception) {
             return null;
         }
+        // A day its month lacks (31 Nov, 30 Feb) parses as the next month's, with
+        // a warning, and was waited out as that day (2.5.1, measured 2026-10-10).
+        $errors = DateTimeImmutable::getLastErrors();
+        if ($errors !== false && $errors['warning_count'] > 0) {
+            return null;
+        }
         return max(0, $when - time());
     }
 
