@@ -18,6 +18,11 @@ declare(strict_types=1);
 //   2. The staging key is missing. That one skips the database tests from inside
 //      the suite, so the skip and its reason land in the PHPUnit output rather
 //      than here. The OAuth checks carry no key and run regardless.
+//
+// A third makes it a FAILURE: an archive other than the one Packagist lists.
+// Composer installs from whatever repository its config names, a mirror of
+// someone's own included, so the installed archive's type, url and commit are
+// held to Packagist's own listing for that version.
 
 use InternetData\Integration\Staging;
 
@@ -115,7 +120,66 @@ function assertInstalledFromPackagist(string $dir, array $versions): void
         );
     }
     echo '==> installed ' . PACKAGE . "@{$entry['version']} from {$url}\n";
+
+    // Every https archive looks alike, so the type, the url and the commit are
+    // each held to what the registry itself lists for that version.
+    $dist = $entry['dist'];
+    $listed = listedDist($entry['version']);
+    foreach (['type', 'url', 'reference'] as $key) {
+        if (($dist[$key] ?? null) !== ($listed[$key] ?? null)) {
+            throw new RuntimeException(sprintf(
+                'installed %s@%s from %s, where %s lists %s, so something other than the registry served it',
+                PACKAGE, $entry['version'], json_encode($dist), registry(), json_encode($listed),
+            ));
+        }
+    }
+    echo "==> it is the archive " . registry() . " lists for {$entry['version']}, at {$dist['reference']}\n";
 }
+
+/**
+ * The dist the registry lists for one version, from its composer/2 metadata.
+ * Read cache-busted, since a CDN in front of the registry can hold a listing
+ * for minutes, and a release this run is the first to see would be missing.
+ *
+ * @return array<string, mixed>
+ */
+function listedDist(string $version): array
+{
+    $url = sprintf('%s/p2/%s.json?t=%d', registry(), PACKAGE, time());
+    $body = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 30]]));
+    if ($body === false) {
+        throw new RuntimeException("cannot read {$url}");
+    }
+    $metadata = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+    $entries = $metadata['packages'][PACKAGE] ?? [];
+    // The minified form lists each version as its changes from the one before.
+    $minified = ($metadata['minified'] ?? '') === 'composer/2.0';
+    $expanded = [];
+    foreach ($entries as $entry) {
+        foreach ($entry as $key => $value) {
+            if ($value === '__unset') {
+                unset($expanded[$key]);
+            } else {
+                $expanded[$key] = $value;
+            }
+        }
+        if (release((string) ($expanded['version'] ?? '')) === release($version)) {
+            return $expanded['dist'] ?? [];
+        }
+        if (!$minified) {
+            $expanded = [];
+        }
+    }
+    throw new RuntimeException(registry() . ' lists no ' . PACKAGE . "@{$version}");
+}
+
+// Where the install is held to: Packagist, unless a rehearsal against a
+// stand-in for it names another.
+function registry(): string
+{
+    return rtrim((string) (getenv('PACKAGIST_URL') ?: 'https://repo.packagist.org'), '/');
+}
+
 
 // A tag may or may not carry a leading v, and composer reports it as tagged.
 function release(string $version): string
