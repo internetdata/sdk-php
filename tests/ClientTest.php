@@ -452,8 +452,8 @@ final class ClientTest extends TestCase
 
     // Every value object is handed out of a mapping the caller does not own, so
     // it must not be writable from underneath whoever else holds it.
-    // An Open family downloads whatever its standing, which stays the
-    // organization's own; a rolling license's dates come through beside it.
+    // An Open family's standing stays as served, never derived from `open`;
+    // a rolling license's dates come through beside it.
     public function testTheListingCarriesOpenAndTheRenewalDates(): void
     {
         $family = static fn (string $base, string $standing, bool $open, ?string $renews, ?string $notice): array => [

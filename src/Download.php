@@ -30,9 +30,7 @@ final class Download
         /** The evaluation sample rather than the database itself. */
         public readonly bool $sample = false,
         /**
-         * Taken under the Open license rather than one of your licenses: an Open
-         * database downloaded while your organization held no license in term
-         * for it.
+         * A download of an Open database.
          */
         public readonly bool $open = false,
     ) {

@@ -54,9 +54,9 @@ final class Database
          */
         public readonly ?DateTimeImmutable $noticeDueAt = null,
         /**
-         * An Open database: any organization downloads it, and fetches its
-         * checksums, with no license, under CC BY-SA 4.0. `standing` still
-         * reports your own license, which grants more where you hold one.
+         * An Open database: free under CC BY-SA 4.0. Every organization holds
+         * a `standard` license to it from the start, which `standing` and
+         * `licenseType` report like any other.
          */
         public readonly bool $open = false,
     ) {
