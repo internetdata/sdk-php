@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.5.3 - 2026-10-13
+
+### Fixes
+
+- Re-pin the spec to 2026.10.13: Open databases come with a license ([`3391523`](https://github.com/internetdata/sdk-php/commit/33915239c4a6b025bafd21723f5b4a7f8f579dc8))
+
 ## 2.5.2 - 2026-10-10
 
 ### Fixes
