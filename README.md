@@ -17,7 +17,7 @@ Requires PHP 8.2 or newer.
 
 ## Usage
 
-Every database is licensed by contract, so you always start with a key carrying the `db.download` scope. If your organization doesn't have one yet, [request an evaluation](https://internetdata.io/contact?purpose=evaluation&subject=Evaluation+license). Then:
+Every database call needs a key carrying the `db.download` scope, which you create in the [console](https://app.internetdata.io). The Open databases are licensed to every organization from the start and are free under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), and `list()` marks them `open`. The rest are licensed by contract; if your organization doesn't have a license yet, [request an evaluation](https://internetdata.io/contact?purpose=evaluation&subject=Evaluation+license). Then:
 
 ```php
 use InternetData\Client;
