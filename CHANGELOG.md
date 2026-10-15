@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.5.4 - 2026-10-15
+
+### Fixes
+
+- Retry an unreadable answer to OAuth discovery and device authorization ([`9607f30`](https://github.com/internetdata/sdk-php/commit/9607f304e25c0166ceb636e13f6c0070456a3aca))
+
 ## 2.5.3 - 2026-10-13
 
 ### Fixes
