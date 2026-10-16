@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.5.5 - 2026-10-16
+
+### Fixes
+
+- Re-pin the spec to 2026.10.15: three descriptions in US spelling ([`f4205c7`](https://github.com/internetdata/sdk-php/commit/f4205c74136755aca75f3df9a60885251bf35dd9))
+
 ## 2.5.4 - 2026-10-15
 
 ### Fixes
