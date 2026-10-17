@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.6.0 - 2026-10-17
+
+### Features
+
+- Re-pin the spec to 2026.10.16: dynamic client registration ([`bc7e343`](https://github.com/internetdata/sdk-php/commit/bc7e3436fa6064ad66bb9dcd7899a0c6d258d063))
+
 ## 2.5.5 - 2026-10-16
 
 ### Fixes
