@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.6.1 - 2026-10-17
+
+### Fixes
+
+- Refuse a database answer whose member has the wrong type ([`c7f4e69`](https://github.com/internetdata/sdk-php/commit/c7f4e693b196dfeeb893210cc8fa7b19df6b6123))
+
 ## 2.6.0 - 2026-10-17
 
 ### Features
