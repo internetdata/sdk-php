@@ -31,6 +31,7 @@ final class OauthMetadata
         public readonly ?bool $authorizationResponseIssParameterSupported = null,
         public readonly ?string $serviceDocumentation = null,
         public readonly ?bool $clientIdMetadataDocumentSupported = null,
+        public readonly ?string $registrationEndpoint = null,
     ) {
     }
 }
