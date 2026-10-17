@@ -141,7 +141,8 @@ final class ClientTest extends TestCase
             'id' => 'bogon_asn_v1',
             'updated' => '2026-09-04',
             'entries' => 7,
-            'schema' => [],
+            // An empty object: PHP's own [] would go out as a JSON list.
+            'schema' => new \stdClass(),
             'size' => ['csvgz' => 264],
         ])]);
 
@@ -387,6 +388,102 @@ final class ClientTest extends TestCase
                 self::assertCount(3, $stub->calls, "{$path}, {$name}: retried like an outage");
             }
         }
+    }
+
+    /**
+     * The generated deserializer casts a scalar with settype(), so through 2.6.0
+     * a version served as "x" came back as 0, an `open` of "yes" as true and a
+     * `size` of "760" as [760], each sent once as if it were the answer.
+     *
+     * @return iterable<string, array{string, array<string, mixed>}>
+     */
+    public static function wrongTypes(): iterable
+    {
+        $version = ['id' => 'bogon_ip_v1', 'version' => 1, 'summary' => 'v1', 'formats' => ['csvgz']];
+        $family = ['base' => 'bogon_ip', 'name' => 'Bogon IP', 'summary' => 's', 'standing' => 'licensed',
+            'open' => false, 'license_type' => 'standard', 'starts' => null, 'expires' => null,
+            'versions' => [$version]];
+        $listing = static fn (array $f): array => ['databases' => [$f]];
+        $metadata = self::metadata();
+        $sums = ['md5' => 'm', 'sha1' => 's1', 'sha256' => 's256', 'sha512' => 's512'];
+        $download = self::download();
+        yield 'a version of "3"' => [Stub::LIST, $listing(['versions' => [['version' => '3'] + $version]] + $family)];
+        yield 'a version of "x"' => [Stub::LIST, $listing(['versions' => [['version' => 'x'] + $version]] + $family)];
+        yield 'a version of 1.5' => [Stub::LIST, $listing(['versions' => [['version' => 1.5] + $version]] + $family)];
+        yield 'a format of 1' => [Stub::LIST, $listing(['versions' => [['formats' => [1]] + $version]] + $family)];
+        yield 'a version of 1' => [Stub::LIST, $listing(['versions' => [1]] + $family)];
+        yield 'an open of "yes"' => [Stub::LIST, $listing(['open' => 'yes'] + $family)];
+        yield 'an open of 1' => [Stub::LIST, $listing(['open' => 1] + $family)];
+        yield 'an expires of 1' => [Stub::LIST, $listing(['expires' => 1] + $family)];
+        yield 'a base of 1' => [Stub::LIST, $listing(['base' => 1] + $family)];
+        yield 'entries of "42"' => [Stub::METADATA, ['entries' => '42'] + $metadata];
+        yield 'a size of "760"' => [Stub::METADATA, ['size' => ['csvgz' => '760']] + $metadata];
+        yield 'a size map of "760"' => [Stub::METADATA, ['size' => '760'] + $metadata];
+        yield 'a column name of 1' => [Stub::METADATA, ['schema' => ['csvgz' => [['name' => 1, 'type' => 't']]]] + $metadata];
+        yield 'a sample row of 1' => [Stub::METADATA, ['sample' => ['csvgz' => [1]]] + $metadata];
+        yield 'an updated of 1' => [Stub::METADATA, ['updated' => 1] + $metadata];
+        yield 'a sha256 of 1' => [Stub::CHECKSUM, ['checksums' => ['sha256' => 1] + $sums]];
+        yield 'bytes of "10"' => [Stub::DOWNLOADS, ['downloads' => [['bytes' => '10'] + $download]]];
+        yield 'a download open of "true"' => [Stub::DOWNLOADS, ['downloads' => [['open' => 'true'] + $download]]];
+        yield 'an http_status of "200"' => [Stub::DOWNLOADS, ['downloads' => [['http_status' => '200'] + $download]]];
+    }
+
+    /** @param array<string, mixed> $body */
+    #[DataProvider('wrongTypes')]
+    public function testAMemberOfTheWrongTypeAtAnyDepthIsARetriedServerError(string $path, array $body): void
+    {
+        $stub = new Stub([$path => Stub::ok($body)]);
+        $client = self::client($stub, retries: 2);
+        try {
+            match ($path) {
+                Stub::LIST => $client->database->list(),
+                Stub::METADATA => $client->database->metadata('bogon_ip_v1'),
+                Stub::CHECKSUM => $client->database->checksums('bogon_ip_v1', 'csvgz'),
+                Stub::DOWNLOADS => $client->database->downloads(),
+            };
+            self::fail('returned an answer');
+        } catch (InternetDataException $e) {
+            self::assertSame(ErrorKind::ServerError, $e->kind);
+            self::assertSame(200, $e->status);
+        }
+        self::assertCount(3, $stub->calls, 'retried like an outage');
+    }
+
+    /** Refusing these would fail every refused download and every family with no license. */
+    public function testNullableAndOptionalMembersStayAnAnswer(): void
+    {
+        $family = ['base' => 'bogon_ip', 'name' => 'Bogon IP', 'summary' => 's', 'standing' => 'unlicensed',
+            'open' => true, 'license_type' => null, 'expires' => null,
+            'versions' => [['id' => 'bogon_ip_v1', 'version' => 1, 'summary' => 'v1', 'formats' => ['csvgz']]]];
+        $download = ['bytes' => null, 'http_status' => null, 'apikey_id' => null, 'client_ip' => null,
+            'user_agent' => null] + self::download();
+        $stub = new Stub([
+            Stub::LIST => Stub::ok(['databases' => [$family]]),
+            Stub::METADATA => Stub::ok(self::metadata()),
+            Stub::DOWNLOADS => Stub::ok(['downloads' => [$download]]),
+        ]);
+        $client = self::client($stub);
+
+        self::assertNull($client->database->list()[0]->licenseType);
+        self::assertSame(42, $client->database->metadata('bogon_ip_v1')->entries);
+        self::assertNull($client->database->downloads()[0]->bytes);
+        self::assertCount(3, $stub->calls);
+    }
+
+    /** @return array<string, mixed> */
+    private static function metadata(): array
+    {
+        return ['id' => 'bogon_ip_v1', 'updated' => '2026-09-04', 'entries' => 42,
+            'schema' => ['csvgz' => [['name' => 'range_start', 'type' => 'varchar']]],
+            'size' => ['csvgz' => 760]];
+    }
+
+    /** @return array<string, mixed> */
+    private static function download(): array
+    {
+        return ['dataset_id' => 'bogon_ip_v1', 'format' => 'csvgz', 'outcome' => 'ok', 'sample' => false,
+            'open' => true, 'bytes' => 760, 'http_status' => 200, 'apikey_id' => 'key_1',
+            'client_ip' => '203.0.113.7', 'user_agent' => 'curl/8.5.0', 'created' => '2026-09-04T10:00:00Z'];
     }
 
     public function testATransportFailureIsRetriedAndThenReportedAsNetwork(): void

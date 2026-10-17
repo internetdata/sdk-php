@@ -12,6 +12,7 @@ use GuzzleHttp\RequestOptions;
 use JsonException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use InternetData\Internal\Model\ModelInterface;
 use InternetData\Internal\ObjectSerializer;
 use TypeError;
 use ValueError;
@@ -155,11 +156,86 @@ final class Transport
         } catch (JsonException $e) {
             throw Errors::malformed($e->getMessage(), $status);
         }
+        $wrong = self::nonconforming($decoded, $class, '');
+        if ($wrong !== null) {
+            throw Errors::malformed(sprintf('the API answered %s of the wrong type', $wrong), $status);
+        }
         $model = ObjectSerializer::deserialize($decoded, $class);
         if (!$model instanceof $class) {
             throw Errors::malformed(sprintf('expected %s', $class), $status);
         }
         return $model;
+    }
+
+    /**
+     * Where a decoded answer is not of the type its generated model gives it, by
+     * the member's path, or null when it is. The generated deserializer casts a
+     * scalar with settype(), so a version served as "x" would become 0, an
+     * `open` of "yes" true and a `size` of "760" [760]: every member is checked
+     * first, at every depth. A null or absent member is left to the typed
+     * getters, which refuse the ones the spec requires.
+     */
+    private static function nonconforming(mixed $value, string $type, string $at): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $here = $at === '' ? 'the answer' : $at;
+        if (str_ends_with($type, '[]')) {
+            if (!is_array($value) || !array_is_list($value)) {
+                return $here;
+            }
+            foreach ($value as $i => $item) {
+                $wrong = self::nonconforming($item, substr($type, 0, -2), "{$at}[{$i}]");
+                if ($wrong !== null) {
+                    return $wrong;
+                }
+            }
+            return null;
+        }
+        if (preg_match('/^array<string,(.+)>$/', $type, $m) === 1) {
+            if (!$value instanceof \stdClass) {
+                return $here;
+            }
+            foreach (get_object_vars($value) as $key => $item) {
+                $wrong = self::nonconforming($item, $m[1], "{$at}.{$key}");
+                if ($wrong !== null) {
+                    return $wrong;
+                }
+            }
+            return null;
+        }
+        $scalar = match ($type) {
+            'int' => is_int($value),
+            'float' => is_int($value) || is_float($value),
+            'bool' => is_bool($value),
+            'string', '\DateTime' => is_string($value),
+            'object' => $value instanceof \stdClass,
+            'mixed' => true,
+            default => null,
+        };
+        if ($scalar !== null) {
+            return $scalar ? null : $here;
+        }
+        if (is_subclass_of($type, \BackedEnum::class)) {
+            return is_string($value) ? null : $here;
+        }
+        if (is_subclass_of($type, ModelInterface::class)) {
+            if (!$value instanceof \stdClass) {
+                return $here;
+            }
+            $wire = $type::attributeMap();
+            foreach ($type::openAPITypes() as $property => $memberType) {
+                $name = $wire[$property];
+                $path = $at === '' ? $name : "{$at}.{$name}";
+                $wrong = self::nonconforming($value->{$name} ?? null, $memberType, $path);
+                if ($wrong !== null) {
+                    return $wrong;
+                }
+            }
+            return null;
+        }
+        return null;
     }
 
     /**
