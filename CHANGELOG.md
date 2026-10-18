@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.0 - 2026-10-18
+
+### Features
+
+- Add oauth->register, for RFC 7591 dynamic client registration ([`9719b8e`](https://github.com/internetdata/sdk-php/commit/9719b8e58c2e24fc27e89ed72fff908c53a62320))
+
 ## 2.6.1 - 2026-10-17
 
 ### Fixes
