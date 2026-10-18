@@ -6,6 +6,7 @@ What each release changed for you, newest first. Each line is a commit's summary
 
 ### Fixes
 
+- Fail a transfer Guzzle cuts short as a network error ([`e706ac8`](https://github.com/internetdata/sdk-php/commit/e706ac84f191d1a16db7a201b18abf55a89eb10f))
 - Re-pin the spec to 2026.10.18: client_id_issued_at is int64 ([`dd904b4`](https://github.com/internetdata/sdk-php/commit/dd904b49eb4e98018497972a207cdf7cc560fb9b))
 
 ## 2.7.0 - 2026-10-18
