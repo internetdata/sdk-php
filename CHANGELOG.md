@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.1 - 2026-10-18
+
+### Fixes
+
+- Re-pin the spec to 2026.10.18: client_id_issued_at is int64 ([`dd904b4`](https://github.com/internetdata/sdk-php/commit/dd904b49eb4e98018497972a207cdf7cc560fb9b))
+
 ## 2.7.0 - 2026-10-18
 
 ### Features
