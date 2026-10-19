@@ -426,6 +426,12 @@ final class ClientTest extends TestCase
         yield 'bytes of "10"' => [Stub::DOWNLOADS, ['downloads' => [['bytes' => '10'] + $download]]];
         yield 'a download open of "true"' => [Stub::DOWNLOADS, ['downloads' => [['open' => 'true'] + $download]]];
         yield 'an http_status of "200"' => [Stub::DOWNLOADS, ['downloads' => [['http_status' => '200'] + $download]]];
+        // Through 2.7.1 these came back as served.
+        yield 'a format of null' => [Stub::LIST, $listing(['versions' => [['formats' => [null]] + $version]] + $family)];
+        yield 'a null sample row' => [Stub::METADATA, ['sample' => ['csvgz' => [null]]] + $metadata];
+        yield 'a size of null' => [Stub::METADATA, ['size' => ['csvgz' => null]] + $metadata];
+        yield 'a null family' => [Stub::LIST, ['databases' => [$family, null]]];
+        yield 'a null download' => [Stub::DOWNLOADS, ['downloads' => [null]]];
     }
 
     /** @param array<string, mixed> $body */

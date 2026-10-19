@@ -173,7 +173,9 @@ final class Transport
      * scalar with settype(), so a version served as "x" would become 0, an
      * `open` of "yes" true and a `size` of "760" [760]: every member is checked
      * first, at every depth. A null or absent member is left to the typed
-     * getters, which refuse the ones the spec requires.
+     * getters, which refuse the ones the spec requires, but no list entry or
+     * map value the spec describes may be null: through 2.7.1 a format of null
+     * came back with a warning, and a sample row or a size of null as served.
      */
     private static function nonconforming(mixed $value, string $type, string $at): ?string
     {
@@ -186,7 +188,7 @@ final class Transport
                 return $here;
             }
             foreach ($value as $i => $item) {
-                $wrong = self::nonconforming($item, substr($type, 0, -2), "{$at}[{$i}]");
+                $wrong = $item === null ? "{$at}[{$i}]" : self::nonconforming($item, substr($type, 0, -2), "{$at}[{$i}]");
                 if ($wrong !== null) {
                     return $wrong;
                 }
@@ -198,7 +200,7 @@ final class Transport
                 return $here;
             }
             foreach (get_object_vars($value) as $key => $item) {
-                $wrong = self::nonconforming($item, $m[1], "{$at}.{$key}");
+                $wrong = $item === null ? "{$at}.{$key}" : self::nonconforming($item, $m[1], "{$at}.{$key}");
                 if ($wrong !== null) {
                     return $wrong;
                 }
