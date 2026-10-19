@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.2 - 2026-10-19
+
+### Fixes
+
+- Refuse a null list entry or map value in a database answer ([`75ca536`](https://github.com/internetdata/sdk-php/commit/75ca5360df5c95fe3a530190c3443e138c3c73f0))
+
 ## 2.7.1 - 2026-10-18
 
 ### Fixes
