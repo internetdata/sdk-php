@@ -432,6 +432,43 @@ final class ClientTest extends TestCase
         yield 'a size of null' => [Stub::METADATA, ['size' => ['csvgz' => null]] + $metadata];
         yield 'a null family' => [Stub::LIST, ['databases' => [$family, null]]];
         yield 'a null download' => [Stub::DOWNLOADS, ['downloads' => [null]]];
+        // Through 2.7.2 these came back as answers: nothing reads a checksum answer's
+        // `id` or `format`, and the deserializer made a date of any string it could.
+        $checksum = ['id' => 'bogon_ip_v1', 'format' => 'csvgz', 'checksums' => $sums];
+        yield 'a checksum answer without its id' => [Stub::CHECKSUM, array_diff_key($checksum, ['id' => 0])];
+        yield 'a checksum id of null' => [Stub::CHECKSUM, ['id' => null] + $checksum];
+        yield 'a checksum answer without its format' => [Stub::CHECKSUM, array_diff_key($checksum, ['format' => 0])];
+        yield 'a checksum format of null' => [Stub::CHECKSUM, ['format' => null] + $checksum];
+        yield 'an updated of "x"' => [Stub::METADATA, ['updated' => 'x'] + $metadata];
+        yield 'an updated of "tomorrow"' => [Stub::METADATA, ['updated' => 'tomorrow'] + $metadata];
+        yield 'an updated on 30 February' => [Stub::METADATA, ['updated' => '2026-02-30'] + $metadata];
+        yield 'an updated with a time' => [Stub::METADATA, ['updated' => '2026-09-04T00:00:00Z'] + $metadata];
+        yield 'a starts of "x"' => [Stub::LIST, $listing(['starts' => 'x'] + $family)];
+        yield 'a starts on 31 November' => [Stub::LIST, $listing(['starts' => '2026-11-31T00:00:00Z'] + $family)];
+        yield 'a starts at 24:00' => [Stub::LIST, $listing(['starts' => '2026-09-04T24:00:00Z'] + $family)];
+        yield 'a starts with no zone' => [Stub::LIST, $listing(['starts' => '2026-09-04T10:00:00'] + $family)];
+        yield 'a created of "now"' => [Stub::DOWNLOADS, ['downloads' => [['created' => 'now'] + $download]]];
+    }
+
+    /** The forms the API sends: a date-time with milliseconds and `Z`, an offset, and a full-date. */
+    public function testRfc3339DatesAreRead(): void
+    {
+        $family = ['base' => 'bogon_ip', 'name' => 'Bogon IP', 'summary' => 's', 'standing' => 'licensed',
+            'open' => false, 'license_type' => 'standard', 'starts' => '2026-09-04T10:00:00.123Z',
+            'expires' => '2027-09-04T10:00:00+05:30',
+            'versions' => [['id' => 'bogon_ip_v1', 'version' => 1, 'summary' => 'v1', 'formats' => ['csvgz']]]];
+        $stub = new Stub([
+            Stub::LIST => Stub::ok(['databases' => [$family]]),
+            Stub::METADATA => Stub::ok(['updated' => '2024-02-29'] + self::metadata()),
+        ]);
+        $client = self::client($stub);
+        $utc = new \DateTimeZone('UTC');
+
+        $listed = $client->database->list()[0];
+        self::assertSame('2026-09-04T10:00:00+00:00', $listed->starts?->setTimezone($utc)->format(DATE_ATOM));
+        self::assertSame('2027-09-04T04:30:00+00:00', $listed->expires?->setTimezone($utc)->format(DATE_ATOM));
+        self::assertSame('2024-02-29', $client->database->metadata('bogon_ip_v1')->updated->format('Y-m-d'));
+        self::assertCount(2, $stub->calls);
     }
 
     /** @param array<string, mixed> $body */

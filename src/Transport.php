@@ -35,6 +35,16 @@ final class Transport
      */
     private const LONGEST_RETRY_AFTER = 2_147_483;
 
+    /**
+     * RFC 3339's full-date, the spec's `date`, and its date-time, the spec's
+     * `date-time`, in the upper case the API sends. Anything else reaches the
+     * generated deserializer's `new DateTime()`, which reads `x` as the current
+     * time eleven hours west and `tomorrow` as midnight.
+     */
+    private const DATE = '/^(\d{4})-(\d{2})-(\d{2})$/';
+
+    private const DATE_TIME = '/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):(\d{2}))$/';
+
     public function __construct(
         private readonly ClientInterface $http,
         private readonly int $retries,
@@ -164,6 +174,10 @@ final class Transport
         if (!$model instanceof $class) {
             throw Errors::malformed(sprintf('expected %s', $class), $status);
         }
+        $unmet = self::unmet($model, $class, '');
+        if ($unmet !== null) {
+            throw Errors::malformed(sprintf('the API answered %s', $unmet), $status);
+        }
         return $model;
     }
 
@@ -176,8 +190,11 @@ final class Transport
      * getters, which refuse the ones the spec requires, but no list entry or
      * map value the spec describes may be null: through 2.7.1 a format of null
      * came back with a warning, and a sample row or a size of null as served.
+     * A date must be one in the form its `$format` names, on a day that exists:
+     * through 2.7.2 `updated: "x"` came back as the time of the call, and
+     * 30 February as 2 March.
      */
-    private static function nonconforming(mixed $value, string $type, string $at): ?string
+    private static function nonconforming(mixed $value, string $type, string $at, ?string $format = null): ?string
     {
         if ($value === null) {
             return null;
@@ -211,7 +228,8 @@ final class Transport
             'int' => is_int($value),
             'float' => is_int($value) || is_float($value),
             'bool' => is_bool($value),
-            'string', '\DateTime' => is_string($value),
+            'string' => is_string($value),
+            '\DateTime' => is_string($value) && self::isDate($value, $format),
             'object' => $value instanceof \stdClass,
             'mixed' => true,
             default => null,
@@ -227,15 +245,69 @@ final class Transport
                 return $here;
             }
             $wire = $type::attributeMap();
+            $formats = $type::openAPIFormats();
             foreach ($type::openAPITypes() as $property => $memberType) {
                 $name = $wire[$property];
                 $path = $at === '' ? $name : "{$at}.{$name}";
-                $wrong = self::nonconforming($value->{$name} ?? null, $memberType, $path);
+                $wrong = self::nonconforming($value->{$name} ?? null, $memberType, $path, $formats[$property] ?? null);
                 if ($wrong !== null) {
                     return $wrong;
                 }
             }
             return null;
+        }
+        return null;
+    }
+
+    private static function isDate(string $value, ?string $format): bool
+    {
+        $m = [];
+        if (preg_match($format === 'date' ? self::DATE : self::DATE_TIME, $value, $m) !== 1
+            || !checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+            return false;
+        }
+        // An hour of 24 or a minute of 60 rolls over the way a missing day does.
+        return $format === 'date'
+            || ((int) $m[4] < 24 && (int) $m[5] < 60 && (int) $m[6] < 60
+                && (int) ($m[7] ?? 0) < 24 && (int) ($m[8] ?? 0) < 60);
+    }
+
+    /**
+     * Where a deserialized answer breaks a rule its generated model states, a
+     * member the spec requires absent or null above all, by the member's path,
+     * or null when none does. A typed getter refuses such a member only when
+     * something reads it, and nothing reads a checksum answer's `id` or
+     * `format`, so through 2.7.2 an answer without them came back as one.
+     */
+    private static function unmet(mixed $value, string $type, string $at): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $children = [];
+        if (str_ends_with($type, '[]')) {
+            foreach ($value as $i => $item) {
+                $children["{$at}[{$i}]"] = [$item, substr($type, 0, -2)];
+            }
+        } elseif (preg_match('/^array<string,(.+)>$/', $type, $m) === 1) {
+            foreach ($value as $key => $item) {
+                $children["{$at}.{$key}"] = [$item, $m[1]];
+            }
+        } elseif ($value instanceof ModelInterface) {
+            $invalid = $value->listInvalidProperties();
+            if ($invalid !== []) {
+                return sprintf('%s that breaks the spec (%s)', $at === '' ? 'an answer' : $at, $invalid[0]);
+            }
+            $wire = $value::attributeMap();
+            foreach ($value::openAPITypes() as $property => $memberType) {
+                $children[$at === '' ? $wire[$property] : "{$at}.{$wire[$property]}"] = [$value[$property], $memberType];
+            }
+        }
+        foreach ($children as $path => [$item, $itemType]) {
+            $wrong = self::unmet($item, $itemType, $path);
+            if ($wrong !== null) {
+                return $wrong;
+            }
         }
         return null;
     }
