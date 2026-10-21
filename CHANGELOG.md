@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.4 - 2026-10-21
+
+### Fixes
+
+- Re-pin the spec to 2026.10.21: a 403 for a refused address ([`024ae08`](https://github.com/internetdata/sdk-php/commit/024ae08fb5f97e89ad11024e5d202d4677a652a4))
+
 ## 2.7.3 - 2026-10-20
 
 ### Fixes
