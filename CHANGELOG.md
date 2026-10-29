@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.5 - 2026-10-29
+
+### Fixes
+
+- Read a lowercase t or z in a date-time, and refuse a final newline ([`0a5c53b`](https://github.com/internetdata/sdk-php/commit/0a5c53bbd1cf42a6bb538ec4ce677c1ef2c9f1b0))
+
 ## 2.7.4 - 2026-10-21
 
 ### Fixes
