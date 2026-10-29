@@ -448,14 +448,19 @@ final class ClientTest extends TestCase
         yield 'a starts at 24:00' => [Stub::LIST, $listing(['starts' => '2026-09-04T24:00:00Z'] + $family)];
         yield 'a starts with no zone' => [Stub::LIST, $listing(['starts' => '2026-09-04T10:00:00'] + $family)];
         yield 'a created of "now"' => [Stub::DOWNLOADS, ['downloads' => [['created' => 'now'] + $download]]];
+        // Through 2.7.4 `$` let a final newline through, and the deserializer read the rest.
+        yield 'a starts ending in a newline' => [Stub::LIST, $listing(['starts' => "2026-09-04T10:00:00Z\n"] + $family)];
+        yield 'a created ending in a newline' => [Stub::DOWNLOADS,
+            ['downloads' => [['created' => "2026-09-04T10:00:00Z\n"] + $download]]];
+        yield 'an updated ending in a newline' => [Stub::METADATA, ['updated' => "2026-09-04\n"] + $metadata];
     }
 
-    /** The forms the API sends: a date-time with milliseconds and `Z`, an offset, and a full-date. */
+    /** The forms the API sends, a date-time with milliseconds and `Z`, an offset and a full-date, and lowercase. */
     public function testRfc3339DatesAreRead(): void
     {
         $family = ['base' => 'bogon_ip', 'name' => 'Bogon IP', 'summary' => 's', 'standing' => 'licensed',
             'open' => false, 'license_type' => 'standard', 'starts' => '2026-09-04T10:00:00.123Z',
-            'expires' => '2027-09-04T10:00:00+05:30',
+            'expires' => '2027-09-04T10:00:00+05:30', 'renews_at' => '2027-09-04t10:00:00.5z',
             'versions' => [['id' => 'bogon_ip_v1', 'version' => 1, 'summary' => 'v1', 'formats' => ['csvgz']]]];
         $stub = new Stub([
             Stub::LIST => Stub::ok(['databases' => [$family]]),
@@ -467,6 +472,8 @@ final class ClientTest extends TestCase
         $listed = $client->database->list()[0];
         self::assertSame('2026-09-04T10:00:00+00:00', $listed->starts?->setTimezone($utc)->format(DATE_ATOM));
         self::assertSame('2027-09-04T04:30:00+00:00', $listed->expires?->setTimezone($utc)->format(DATE_ATOM));
+        // RFC 3339 allows a lowercase `t` and `z`, which 2.7.4 refused.
+        self::assertSame('2027-09-04T10:00:00+00:00', $listed->renewsAt?->setTimezone($utc)->format(DATE_ATOM));
         self::assertSame('2024-02-29', $client->database->metadata('bogon_ip_v1')->updated->format('Y-m-d'));
         self::assertCount(2, $stub->calls);
     }
