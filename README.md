@@ -23,7 +23,7 @@ Every database call needs a key carrying the `db.download` scope, which you crea
 use InternetData\Client;
 use InternetData\Options;
 
-$client = new Client(new Options(apiKey: getenv('INTERNETDATA_API_KEY')));
+$client = new Client(new Options(apiKey: getenv('INTERNETDATA_API_KEY') ?: null));
 
 foreach ($client->database->list() as $database) {
     echo "{$database->base}: {$database->standing}\n";   // bogon_ip: licensed
