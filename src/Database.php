@@ -11,7 +11,7 @@ use InternetData\Internal\Model\Database as WireDatabase;
  * One database FAMILY, with your organization's license beside it.
  *
  * A license is held against the family, while a download names one version, so
- * the ids you pass to `download`, `downloadBytes`, `downloadUrl`, `checksums`
+ * the IDs you pass to `download`, `downloadBytes`, `downloadUrl`, `checksums`
  * and `metadata` come from `versions` rather than from here.
  */
 final class Database

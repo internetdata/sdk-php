@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
  *
  * The transfer is budgeted before it starts. `metadata` publishes a size per
  * format, and that size is checked against the ceiling below FIRST, so a
- * mistaken id can never quietly pull one of the multi-gigabyte databases
+ * mistaken ID can never quietly pull one of the multi-gigabyte databases
  * through CI.
  */
 final class DatabaseTest extends TestCase
@@ -88,7 +88,7 @@ final class DatabaseTest extends TestCase
     }
 
     /**
-     * A license covers a database FAMILY, and the ids a download takes hang off
+     * A license covers a database FAMILY, and the IDs a download takes hang off
      * `versions`. PHP is loud about a spec that has drifted from its service
      * where the other bindings are quiet: the generated getters are typed, so a
      * required field the payload does not carry is a TypeError out of

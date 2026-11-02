@@ -10,13 +10,13 @@ use InternetData\Internal\Model\DatabaseVersion as WireDatabaseVersion;
 final class DatabaseVersion
 {
     public function __construct(
-        /** The versioned id, e.g. `bogon_ip_v1`. This is what a download takes. */
+        /** The versioned ID, e.g. `bogon_ip_v1`. This is what a download takes. */
         public readonly string $id,
         public readonly int $version,
         public readonly string $summary,
         /**
          * The formats this version is BUILT in. Asking for another is a 400
-         * rather than a gap: the `_provider` catalogs are keyed by provider id,
+         * rather than a gap: the `_provider` catalogs are keyed by provider ID,
          * so no MMDB exists for them.
          *
          * @var list<string>

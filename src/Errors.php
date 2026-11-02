@@ -60,7 +60,7 @@ final class Errors
             return new InternetDataException(ErrorKind::Forbidden, $message, $status);
         }
         // Any other 4xx is a CLIENT error. Falling through to the server_error
-        // default would make it retryable, so a 404 from a database id that is
+        // default would make it retryable, so a 404 from a database ID that is
         // not published yet would be retried twice before failing. Only 5xx and
         // transport failures are worth a retry.
         if ($status < 500) {
