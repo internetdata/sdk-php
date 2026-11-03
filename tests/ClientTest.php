@@ -435,8 +435,8 @@ final class ClientTest extends TestCase
         // Through 2.7.2 these came back as answers: nothing reads a checksum answer's
         // `id` or `format`, and the deserializer made a date of any string it could.
         $checksum = ['id' => 'bogon_ip_v1', 'format' => 'csvgz', 'checksums' => $sums];
-        yield 'a checksum answer without its id' => [Stub::CHECKSUM, array_diff_key($checksum, ['id' => 0])];
-        yield 'a checksum id of null' => [Stub::CHECKSUM, ['id' => null] + $checksum];
+        yield 'a checksum answer without its ID' => [Stub::CHECKSUM, array_diff_key($checksum, ['id' => 0])];
+        yield 'a checksum ID of null' => [Stub::CHECKSUM, ['id' => null] + $checksum];
         yield 'a checksum answer without its format' => [Stub::CHECKSUM, array_diff_key($checksum, ['format' => 0])];
         yield 'a checksum format of null' => [Stub::CHECKSUM, ['format' => null] + $checksum];
         yield 'an updated of "x"' => [Stub::METADATA, ['updated' => 'x'] + $metadata];

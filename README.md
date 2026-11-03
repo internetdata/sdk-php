@@ -32,11 +32,11 @@ foreach ($client->database->list() as $database) {
 
 Every database call hangs off `$client->database`, which is where the sibling VPNDetection library keeps the same seven calls.
 
-A license is held against a database FAMILY, while a download names one version, so the ids you pass everywhere else come from `versions`:
+A license is held against a database FAMILY, while a download names one version, so the IDs you pass everywhere else come from `versions`:
 
 ```php
 $database->base;                    // 'bogon_ip'
-$database->versions[0]->id;         // 'bogon_ip_v1', the id a download takes
+$database->versions[0]->id;         // 'bogon_ip_v1', the ID a download takes
 $database->versions[0]->formats;    // ['csvgz', 'mmdb']
 $database->licenseType;             // 'standard', or null when there is no license
 ```

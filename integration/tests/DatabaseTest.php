@@ -112,7 +112,7 @@ final class DatabaseTest extends TestCase
             }
             self::assertNotEmpty($database->versions, "{$where}: no versions");
             foreach ($database->versions as $version) {
-                self::assertNotSame('', $version->id, "{$where}: a version with no id");
+                self::assertNotSame('', $version->id, "{$where}: a version with no ID");
                 self::assertGreaterThan(0, $version->version);
                 self::assertNotEmpty($version->formats, "{$version->id}: no formats");
                 foreach ($version->formats as $format) {
@@ -182,7 +182,7 @@ final class DatabaseTest extends TestCase
 
         try {
             self::client()->database->metadata('no_such_database_v1');
-            self::fail('an unknown id was served');
+            self::fail('an unknown ID was served');
         } catch (InternetDataException $e) {
             self::assertSame(404, $e->status);
             self::assertSame(ErrorKind::BadRequest, $e->kind);

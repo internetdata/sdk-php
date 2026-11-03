@@ -62,7 +62,7 @@ final class DatabaseApi
     /**
      * What is inside one database: schema, sample rows, row count and sizes.
      *
-     * @param string $id A versioned id, e.g. `bogon_ip_v1`.
+     * @param string $id A versioned ID, e.g. `bogon_ip_v1`.
      * @throws InternetDataException
      */
     public function metadata(string $id): DatabaseMetadata
