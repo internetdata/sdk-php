@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.6 - 2026-11-03
+
+### Fixes
+
+- Re-pin the spec to 2026.11.02: ID and IDs in its descriptions ([`d974c23`](https://github.com/internetdata/sdk-php/commit/d974c23ad9e03170ce2e0cc209f356ea32cb4dcc))
+- Write ID and IDs in prose, never id or ids ([`756f216`](https://github.com/internetdata/sdk-php/commit/756f21609015117412a22618023c0e247b9761c3))
+
 ## 2.7.5 - 2026-10-29
 
 ### Fixes
