@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.7.7 - 2026-11-06
+
+### Fixes
+
+- Re-pin the spec to 2026.11.05: the download's build parameter ([`7029242`](https://github.com/internetdata/sdk-php/commit/70292429ce85afb12a05e6a4c03a08755bf2619b))
+
 ## 2.7.6 - 2026-11-03
 
 ### Fixes
