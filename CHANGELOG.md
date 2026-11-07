@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.8.0 - 2026-11-07
+
+### Features
+
+- Download a named build: downloadUrl, download and downloadBytes take build ([`e5dfced`](https://github.com/internetdata/sdk-php/commit/e5dfcedecd61c275e3524a4229375882c77db1d6))
+
 ## 2.7.7 - 2026-11-06
 
 ### Fixes
