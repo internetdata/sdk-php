@@ -123,13 +123,24 @@ final class DatabaseApi
      * authorizes the START of one, so a download already running is not
      * interrupted when it lapses.
      *
+     * `$build` names one build of the database, as a `database.updated`
+     * webhook gives it (`20261105.0t53s5`), so the file is the one whose
+     * `sha256` the webhook carries. Null or empty, the default, is the build
+     * that is live. A build is kept 7 days; past that the call throws
+     * `bad_request` with the message `BUILD_GONE`. A name that is not a build's
+     * shape throws `InvalidArgumentException` before anything is sent.
+     *
      * @param string $format `csvgz` or `mmdb`.
      * @throws InternetDataException
      */
-    public function downloadUrl(string $id, string $format): string
+    public function downloadUrl(string $id, string $format, ?string $build = null): string
     {
         return $this->transport->read(
-            $this->api->downloadDatabaseV2Request($id, WireFormat::from($format)),
+            $this->api->downloadDatabaseV2Request(
+                $id,
+                WireFormat::from($format),
+                $build === '' ? null : $build,
+            ),
             static function (ResponseInterface $r): string {
                 $location = $r->getHeaderLine('Location');
                 if ($r->getStatusCode() === 302 && $location !== '') {
@@ -158,15 +169,16 @@ final class DatabaseApi
      *
      * @param string $format `csvgz` or `mmdb`.
      * @param string|resource $destination
+     * @param ?string $build One build of the database, as `downloadUrl` takes it.
      * @throws InternetDataException
      */
-    public function download(string $id, string $format, mixed $destination): int
+    public function download(string $id, string $format, mixed $destination, ?string $build = null): int
     {
         // Checked before the request, so a bad destination costs no quota.
         if (!is_string($destination) && !is_resource($destination)) {
             throw new InvalidArgumentException('destination must be a path or a stream resource');
         }
-        $response = $this->fetchFile($id, $format);
+        $response = $this->fetchFile($id, $format, $build);
         if (!is_string($destination)) {
             return self::drain($response, $destination);
         }
@@ -199,11 +211,12 @@ final class DatabaseApi
      * have not checked against `metadata`'s `size`.
      *
      * @param string $format `csvgz` or `mmdb`.
+     * @param ?string $build One build of the database, as `downloadUrl` takes it.
      * @throws InternetDataException
      */
-    public function downloadBytes(string $id, string $format): string
+    public function downloadBytes(string $id, string $format, ?string $build = null): string
     {
-        $response = $this->fetchFile($id, $format);
+        $response = $this->fetchFile($id, $format, $build);
         $body = $response->getBody();
         $bytes = '';
         while (($chunk = self::readChunk($response, $body, strlen($bytes))) !== '') {
@@ -216,10 +229,10 @@ final class DatabaseApi
     // Follows the 302 as a SECOND, unauthenticated request: the presigned URL
     // carries its own authorization, so forwarding the API key would hand a
     // credential to a host that has no business holding it.
-    private function fetchFile(string $id, string $format): ResponseInterface
+    private function fetchFile(string $id, string $format, ?string $build): ResponseInterface
     {
         return $this->transport->sendStreaming(
-            new Request('GET', $this->downloadUrl($id, $format)),
+            new Request('GET', $this->downloadUrl($id, $format, $build)),
             'object storage refused the download link',
         );
     }

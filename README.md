@@ -69,6 +69,14 @@ $url = $client->database->downloadUrl('bogon_ip_v1', 'mmdb');
 $bytes = $client->database->downloadBytes('bogon_asn_v1', 'csvgz');
 ```
 
+Each of the three downloads the build that is live unless you name one. A `database.updated` webhook names the build it announces and carries its `sha256`, so a receiver that downloads after the next publish asks for that build to get the file the hash is of:
+
+```php
+$client->database->download('vpn_ip_v1', 'mmdb', './vpn_ip_v1.mmdb', $event['data']['build']);
+```
+
+A build is kept 7 days. Past that the call throws `bad_request` with the message `BUILD_GONE`, and downloading without a build fetches the live one. A name that is not a build's shape (`20261105.0t53s5`) throws `InvalidArgumentException` before anything is sent.
+
 ### What is inside, and whether it changed
 
 `metadata` answers the schema, a few real rows, the row count and the size of every published format, without moving the file. Poll it to decide whether today's build is worth fetching, and to budget a transfer before you start it:

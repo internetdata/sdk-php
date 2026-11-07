@@ -69,6 +69,54 @@ final class DownloadTest extends TestCase
         );
     }
 
+    public function testABuildGoesOnTheDownloadRequestAndNoneWithoutOne(): void
+    {
+        $client = $this->client(['blobBytes' => self::SMALL]);
+        $named = '20261105.0t53s5';
+
+        $client->database->downloadUrl('bogon_ip_v1', 'csvgz', $named);
+        $client->database->downloadBytes('bogon_ip_v1', 'csvgz', $named);
+        $client->database->download('bogon_ip_v1', 'csvgz', $this->tmp . '/built.csv.gz', $named);
+        $client->database->downloadUrl('bogon_ip_v1', 'csvgz', '');
+        $client->database->downloadBytes('bogon_ip_v1', 'csvgz');
+
+        $withBuild = ['id' => 'bogon_ip_v1', 'format' => 'csvgz', 'build' => $named];
+        $live = ['id' => 'bogon_ip_v1', 'format' => 'csvgz'];
+        self::assertSame(
+            [$withBuild, $withBuild, $withBuild, $live, $live],
+            array_column($this->origin->requestsTo('/api/v2/database/download'), 'query'),
+        );
+    }
+
+    public function testABuildThatIsNotABuildsNameIsRefusedBeforeAnyRequest(): void
+    {
+        $stub = new Stub();
+        $client = new Client(new Options(apiKey: 'secret-key', httpClient: $stub->client));
+
+        $this->expectException(InvalidArgumentException::class);
+        try {
+            $client->database->downloadUrl('bogon_ip_v1', 'csvgz', 'latest');
+        } finally {
+            self::assertSame([], $stub->calls);
+        }
+    }
+
+    public function testAGoneBuildIsABadRequestAskedOnce(): void
+    {
+        $stub = new Stub([Stub::DOWNLOAD => ['status' => 410, 'body' => ['rc' => 'BUILD_GONE']]]);
+        $client = new Client(new Options(apiKey: 'secret-key', retries: 2, httpClient: $stub->client));
+
+        try {
+            $client->database->downloadUrl('bogon_ip_v1', 'csvgz', '20261029.aaaaaa');
+            self::fail('expected a failure');
+        } catch (InternetDataException $e) {
+            self::assertSame(ErrorKind::BadRequest, $e->kind);
+            self::assertFalse($e->isRetryable());
+            self::assertSame('BUILD_GONE', $e->getMessage());
+        }
+        self::assertSame([Stub::DOWNLOAD], $stub->calls);
+    }
+
     public function testDownloadWritesIntoAStreamTheCallerOpened(): void
     {
         $client = $this->client(['blobBytes' => self::SMALL]);
