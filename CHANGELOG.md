@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.8.1 - 2026-11-09
+
+### Fixes
+
+- Re-pin the spec to 2026.11.08: the token and revoke descriptions ([`41706aa`](https://github.com/internetdata/sdk-php/commit/41706aa2e3d2c5e8c732ef9f5f4bf3ca53ed5445))
+
 ## 2.8.0 - 2026-11-07
 
 ### Features
