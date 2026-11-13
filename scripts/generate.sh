@@ -30,12 +30,29 @@ GENERATOR_IMAGE="${GENERATOR_IMAGE:-openapitools/openapi-generator-cli:v7.25.0}"
 # `listDatabases_200_response` placeholders the mapping is keyed by. Spelled the
 # other way they are silently skipped and the API class references classes that
 # were never emitted.
-SELECT="apis=DatabaseV2"
+#
+# IAM and the authorization server stay out too: nothing hand-written calls them,
+# so a model of theirs would be public surface no one uses.
+SELECT="apis=DatabaseV2:Lookup:Entitlement"
 SELECT="${SELECT},models=Database:DatabaseVersion:DatabaseMetadata:DatabaseMetadataColumn"
 SELECT="${SELECT}:DbChecksums:Download:Error:DatabaseList:DownloadList:ChecksumsResponse"
 # The two named enums. A schema reachable from a selected model is NOT pulled in
 # automatically, and the generated code references it by name regardless.
 SELECT="${SELECT}:DatabaseFormat:Standing"
+# The three lookups and every schema their answers reach, by the same rule.
+SELECT="${SELECT}:LookupResponse:ClassDetail:ProxyDetail:PubproxyDetail:CarrierDetail"
+SELECT="${SELECT}:SatelliteDetail:SshDetail:SmtpDetail:WebDetail:DnsResolverDetail:BitTorrentDetail"
+SELECT="${SELECT}:Location:Asn:Company:AbuseContact:Whois:Rwhois:HostedDomains"
+SELECT="${SELECT}:AsnLookupResponse:AsnPrefix"
+SELECT="${SELECT}:DomainLookupResponse:DomainDns:DnsAddressRecord:DnsMxRecord:DnsNsRecord"
+SELECT="${SELECT}:DnsCnameRecord:DomainIpRanges:DomainIpRange:DisposableDetail"
+# The batch, whose results the generator wraps in a oneOf of the three answers,
+# the lookup refusal, and the entitlement with its refusal. No mapping renames
+# that oneOf, so it is keyed by its placeholder and emitted as
+# BatchLookupResponseResultsValue; spelled that way here it is skipped.
+SELECT="${SELECT}:BatchLookupRequest:BatchLookupResponse:BatchLookupResponse_results_value"
+SELECT="${SELECT}:BatchLookupError:LookupError"
+SELECT="${SELECT}:Entitlement:EntitlementApikey:EntitlementPlan:EntitlementUsage:EntitlementError"
 SELECT="${SELECT},supportingFiles"
 
 # Two escaping traps in one line. apiPackage and modelPackage are RELATIVE to
