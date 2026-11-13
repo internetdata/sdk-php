@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.9.1 - 2026-11-13
+
+### Fixes
+
+- Refuse a lookup of what is not an IP address, before sending it ([`b705a6b`](https://github.com/internetdata/sdk-php/commit/b705a6bc0727c47c18097c1ad3338c37c3247075))
+- Re-pin the spec to 2026.11.13 as republished: a detail requires no member ([`233be38`](https://github.com/internetdata/sdk-php/commit/233be38aeca24ef2050b29c5909223720e45348a))
+
 ## 2.9.0 - 2026-11-13
 
 ### Features
