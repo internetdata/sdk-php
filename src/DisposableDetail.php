@@ -40,9 +40,9 @@ final class DisposableDetail
     /** @internal */
     public static function fromWire(WireDisposableDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             confidence: $w->getConfidence(),
-            providers: array_values($w->getProviders()),
+            providers: $w->getProviders() === null ? null : array_values($w->getProviders()),
             firstSeen: $w->getFirstSeen(),
             lastSeen: $w->getLastSeen(),
         );

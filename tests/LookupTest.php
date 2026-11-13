@@ -362,7 +362,6 @@ final class LookupTest extends TestCase
         $spec = 'breaks the spec';
         $with = static fn (array $members): array => Stub::answer('9.9.9.9', $members);
         $bodies = [
-            'a detail with one member' => [$spec, $with(['is_tor' => true, 'tor' => ['provider' => '']])],
             'a detail of the wrong type' => ['of the wrong type', $with(['tor' => ['provider' => 1]])],
             'a location without its country' => [$spec, $with(['location' => ['continent' => 'EU']])],
             'an empty location' => [$spec, $with(['location' => new \stdClass()])],
@@ -386,6 +385,21 @@ final class LookupTest extends TestCase
             }
             self::assertCount(3, $stub->calls, "{$name}: retried like an outage");
         }
+    }
+
+    /**
+     * A detail requires no member, so one served partly is read as served, the
+     * rest null: only a member of the wrong type, or a shared object without what
+     * it requires, makes an answer unreadable.
+     */
+    public function testADetailNeedNotCarryEveryMember(): void
+    {
+        $result = self::lookupOnce(Stub::answer('9.9.9.1', ['is_tor' => true, 'tor' => ['provider' => 'tor']]));
+
+        self::assertSame('tor', $result->tor->provider);
+        self::assertNull($result->tor->providerName);
+        self::assertFalse($result->tor->isEmpty());
+        self::assertTrue($result->relay->isEmpty());
     }
 
     public function testABatchAnswerItCannotReadIsEveryAddressesRetriedServerError(): void

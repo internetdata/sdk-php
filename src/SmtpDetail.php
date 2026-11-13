@@ -38,7 +38,7 @@ final class SmtpDetail
     /** @internal */
     public static function fromWire(WireSmtpDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             port: $w->getPort(),
             banner: $w->getBanner(),
             sessionOk: $w->getSessionOk(),

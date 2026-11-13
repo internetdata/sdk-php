@@ -273,18 +273,6 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['provider'] === null) {
-            $invalidProperties[] = "'provider' can't be null";
-        }
-        if ($this->container['provider_name'] === null) {
-            $invalidProperties[] = "'provider_name' can't be null";
-        }
-        if ($this->container['confidence'] === null) {
-            $invalidProperties[] = "'confidence' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -300,9 +288,9 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets provider
      *
-     * @return string
+     * @return string|null
      */
-    public function getProvider(): string
+    public function getProvider(): ?string
     {
         return $this->container['provider'];
     }
@@ -310,11 +298,11 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets provider
      *
-     * @param string $provider The provider's ID in its catalog; empty for an unattributed range, and on Tor.
+     * @param string|null $provider The provider's ID in its catalog; empty for an unattributed range, and on Tor.
      *
      * @return $this
      */
-    public function setProvider(string $provider): static
+    public function setProvider(?string $provider): static
     {
         if (is_null($provider)) {
             throw new InvalidArgumentException('non-nullable provider cannot be null');
@@ -327,9 +315,9 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets provider_name
      *
-     * @return string
+     * @return string|null
      */
-    public function getProviderName(): string
+    public function getProviderName(): ?string
     {
         return $this->container['provider_name'];
     }
@@ -337,11 +325,11 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets provider_name
      *
-     * @param string $provider_name The name the catalog gives the provider, empty where it names none.
+     * @param string|null $provider_name The name the catalog gives the provider, empty where it names none.
      *
      * @return $this
      */
-    public function setProviderName(string $provider_name): static
+    public function setProviderName(?string $provider_name): static
     {
         if (is_null($provider_name)) {
             throw new InvalidArgumentException('non-nullable provider_name cannot be null');
@@ -354,9 +342,9 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets confidence
      *
-     * @return string
+     * @return string|null
      */
-    public function getConfidence(): string
+    public function getConfidence(): ?string
     {
         return $this->container['confidence'];
     }
@@ -364,11 +352,11 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets confidence
      *
-     * @param string $confidence `high`, `medium` or `low`: how sure we are the range is what the flag says.
+     * @param string|null $confidence `high`, `medium` or `low`: how sure we are the range is what the flag says.
      *
      * @return $this
      */
-    public function setConfidence(string $confidence): static
+    public function setConfidence(?string $confidence): static
     {
         if (is_null($confidence)) {
             throw new InvalidArgumentException('non-nullable confidence cannot be null');
@@ -381,9 +369,9 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -391,11 +379,11 @@ class ClassDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day the range was seen as such.
+     * @param string|null $last_seen The last day the range was seen as such.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');

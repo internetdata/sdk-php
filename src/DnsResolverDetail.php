@@ -40,7 +40,7 @@ final class DnsResolverDetail
     /** @internal */
     public static function fromWire(WireDnsResolverDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             port: $w->getPort(),
             recursionAvailable: $w->getRecursionAvailable(),
             rcode: $w->getRcode(),

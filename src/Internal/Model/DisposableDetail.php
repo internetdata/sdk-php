@@ -273,18 +273,6 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['confidence'] === null) {
-            $invalidProperties[] = "'confidence' can't be null";
-        }
-        if ($this->container['providers'] === null) {
-            $invalidProperties[] = "'providers' can't be null";
-        }
-        if ($this->container['first_seen'] === null) {
-            $invalidProperties[] = "'first_seen' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -300,9 +288,9 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets confidence
      *
-     * @return string
+     * @return string|null
      */
-    public function getConfidence(): string
+    public function getConfidence(): ?string
     {
         return $this->container['confidence'];
     }
@@ -310,11 +298,11 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets confidence
      *
-     * @param string $confidence `high`, `medium` or `low`.
+     * @param string|null $confidence `high`, `medium` or `low`.
      *
      * @return $this
      */
-    public function setConfidence(string $confidence): static
+    public function setConfidence(?string $confidence): static
     {
         if (is_null($confidence)) {
             throw new InvalidArgumentException('non-nullable confidence cannot be null');
@@ -327,9 +315,9 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets providers
      *
-     * @return string[]
+     * @return string[]|null
      */
-    public function getProviders(): array
+    public function getProviders(): ?array
     {
         return $this->container['providers'];
     }
@@ -337,11 +325,11 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets providers
      *
-     * @param string[] $providers The providers behind it.
+     * @param string[]|null $providers The providers behind it.
      *
      * @return $this
      */
-    public function setProviders(array $providers): static
+    public function setProviders(?array $providers): static
     {
         if (is_null($providers)) {
             throw new InvalidArgumentException('non-nullable providers cannot be null');
@@ -354,9 +342,9 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets first_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getFirstSeen(): string
+    public function getFirstSeen(): ?string
     {
         return $this->container['first_seen'];
     }
@@ -364,11 +352,11 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets first_seen
      *
-     * @param string $first_seen The first day seen in use.
+     * @param string|null $first_seen The first day seen in use.
      *
      * @return $this
      */
-    public function setFirstSeen(string $first_seen): static
+    public function setFirstSeen(?string $first_seen): static
     {
         if (is_null($first_seen)) {
             throw new InvalidArgumentException('non-nullable first_seen cannot be null');
@@ -381,9 +369,9 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -391,11 +379,11 @@ class DisposableDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day.
+     * @param string|null $last_seen The last day.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');

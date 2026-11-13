@@ -287,24 +287,6 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['port'] === null) {
-            $invalidProperties[] = "'port' can't be null";
-        }
-        if ($this->container['banner'] === null) {
-            $invalidProperties[] = "'banner' can't be null";
-        }
-        if ($this->container['host_key_fp'] === null) {
-            $invalidProperties[] = "'host_key_fp' can't be null";
-        }
-        if ($this->container['session_ok'] === null) {
-            $invalidProperties[] = "'session_ok' can't be null";
-        }
-        if ($this->container['first_seen'] === null) {
-            $invalidProperties[] = "'first_seen' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -320,9 +302,9 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets port
      *
-     * @return int
+     * @return int|null
      */
-    public function getPort(): int
+    public function getPort(): ?int
     {
         return $this->container['port'];
     }
@@ -330,11 +312,11 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets port
      *
-     * @param int $port The port the server answered on.
+     * @param int|null $port The port the server answered on.
      *
      * @return $this
      */
-    public function setPort(int $port): static
+    public function setPort(?int $port): static
     {
         if (is_null($port)) {
             throw new InvalidArgumentException('non-nullable port cannot be null');
@@ -347,9 +329,9 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets banner
      *
-     * @return string
+     * @return string|null
      */
-    public function getBanner(): string
+    public function getBanner(): ?string
     {
         return $this->container['banner'];
     }
@@ -357,11 +339,11 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets banner
      *
-     * @param string $banner Its banner.
+     * @param string|null $banner Its banner.
      *
      * @return $this
      */
-    public function setBanner(string $banner): static
+    public function setBanner(?string $banner): static
     {
         if (is_null($banner)) {
             throw new InvalidArgumentException('non-nullable banner cannot be null');
@@ -374,9 +356,9 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets host_key_fp
      *
-     * @return string
+     * @return string|null
      */
-    public function getHostKeyFp(): string
+    public function getHostKeyFp(): ?string
     {
         return $this->container['host_key_fp'];
     }
@@ -384,11 +366,11 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets host_key_fp
      *
-     * @param string $host_key_fp Its host key's fingerprint.
+     * @param string|null $host_key_fp Its host key's fingerprint.
      *
      * @return $this
      */
-    public function setHostKeyFp(string $host_key_fp): static
+    public function setHostKeyFp(?string $host_key_fp): static
     {
         if (is_null($host_key_fp)) {
             throw new InvalidArgumentException('non-nullable host_key_fp cannot be null');
@@ -401,9 +383,9 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets session_ok
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getSessionOk(): bool
+    public function getSessionOk(): ?bool
     {
         return $this->container['session_ok'];
     }
@@ -411,11 +393,11 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets session_ok
      *
-     * @param bool $session_ok A session was set up.
+     * @param bool|null $session_ok A session was set up.
      *
      * @return $this
      */
-    public function setSessionOk(bool $session_ok): static
+    public function setSessionOk(?bool $session_ok): static
     {
         if (is_null($session_ok)) {
             throw new InvalidArgumentException('non-nullable session_ok cannot be null');
@@ -428,9 +410,9 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets first_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getFirstSeen(): string
+    public function getFirstSeen(): ?string
     {
         return $this->container['first_seen'];
     }
@@ -438,11 +420,11 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets first_seen
      *
-     * @param string $first_seen The first day it answered.
+     * @param string|null $first_seen The first day it answered.
      *
      * @return $this
      */
-    public function setFirstSeen(string $first_seen): static
+    public function setFirstSeen(?string $first_seen): static
     {
         if (is_null($first_seen)) {
             throw new InvalidArgumentException('non-nullable first_seen cannot be null');
@@ -455,9 +437,9 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -465,11 +447,11 @@ class SshDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day it did.
+     * @param string|null $last_seen The last day it did.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');

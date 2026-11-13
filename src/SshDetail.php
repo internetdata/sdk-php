@@ -40,7 +40,7 @@ final class SshDetail
     /** @internal */
     public static function fromWire(WireSshDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             port: $w->getPort(),
             banner: $w->getBanner(),
             hostKeyFp: $w->getHostKeyFp(),

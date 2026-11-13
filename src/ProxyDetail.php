@@ -44,7 +44,7 @@ final class ProxyDetail
     /** @internal */
     public static function fromWire(WireProxyDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             provider: $w->getProvider(),
             providerName: $w->getProviderName(),
             firstSeen: $w->getFirstSeen(),

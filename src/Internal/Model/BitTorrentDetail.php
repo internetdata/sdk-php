@@ -315,36 +315,6 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['verified'] === null) {
-            $invalidProperties[] = "'verified' can't be null";
-        }
-        if ($this->container['id_matches_ip'] === null) {
-            $invalidProperties[] = "'id_matches_ip' can't be null";
-        }
-        if ($this->container['first_seen'] === null) {
-            $invalidProperties[] = "'first_seen' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
-        if ($this->container['last_reachable'] === null) {
-            $invalidProperties[] = "'last_reachable' can't be null";
-        }
-        if ($this->container['days_seen'] === null) {
-            $invalidProperties[] = "'days_seen' can't be null";
-        }
-        if ($this->container['num_ports'] === null) {
-            $invalidProperties[] = "'num_ports' can't be null";
-        }
-        if ($this->container['peak_num_ports'] === null) {
-            $invalidProperties[] = "'peak_num_ports' can't be null";
-        }
-        if ($this->container['indexer'] === null) {
-            $invalidProperties[] = "'indexer' can't be null";
-        }
-        if ($this->container['clients'] === null) {
-            $invalidProperties[] = "'clients' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -360,9 +330,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets verified
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getVerified(): bool
+    public function getVerified(): ?bool
     {
         return $this->container['verified'];
     }
@@ -370,11 +340,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets verified
      *
-     * @param bool $verified A client here answered, or two or more reported it at once.
+     * @param bool|null $verified A client here answered, or two or more reported it at once.
      *
      * @return $this
      */
-    public function setVerified(bool $verified): static
+    public function setVerified(?bool $verified): static
     {
         if (is_null($verified)) {
             throw new InvalidArgumentException('non-nullable verified cannot be null');
@@ -387,9 +357,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets id_matches_ip
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getIdMatchesIp(): bool
+    public function getIdMatchesIp(): ?bool
     {
         return $this->container['id_matches_ip'];
     }
@@ -397,11 +367,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets id_matches_ip
      *
-     * @param bool $id_matches_ip A client here derived its node ID from the address (BEP 42).
+     * @param bool|null $id_matches_ip A client here derived its node ID from the address (BEP 42).
      *
      * @return $this
      */
-    public function setIdMatchesIp(bool $id_matches_ip): static
+    public function setIdMatchesIp(?bool $id_matches_ip): static
     {
         if (is_null($id_matches_ip)) {
             throw new InvalidArgumentException('non-nullable id_matches_ip cannot be null');
@@ -414,9 +384,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets first_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getFirstSeen(): string
+    public function getFirstSeen(): ?string
     {
         return $this->container['first_seen'];
     }
@@ -424,11 +394,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets first_seen
      *
-     * @param string $first_seen The first day a client was seen here.
+     * @param string|null $first_seen The first day a client was seen here.
      *
      * @return $this
      */
-    public function setFirstSeen(string $first_seen): static
+    public function setFirstSeen(?string $first_seen): static
     {
         if (is_null($first_seen)) {
             throw new InvalidArgumentException('non-nullable first_seen cannot be null');
@@ -441,9 +411,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -451,11 +421,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day.
+     * @param string|null $last_seen The last day.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');
@@ -468,9 +438,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_reachable
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastReachable(): string
+    public function getLastReachable(): ?string
     {
         return $this->container['last_reachable'];
     }
@@ -478,11 +448,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_reachable
      *
-     * @param string $last_reachable The last day one answered, empty when none did.
+     * @param string|null $last_reachable The last day one answered, empty when none did.
      *
      * @return $this
      */
-    public function setLastReachable(string $last_reachable): static
+    public function setLastReachable(?string $last_reachable): static
     {
         if (is_null($last_reachable)) {
             throw new InvalidArgumentException('non-nullable last_reachable cannot be null');
@@ -495,9 +465,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets days_seen
      *
-     * @return int
+     * @return int|null
      */
-    public function getDaysSeen(): int
+    public function getDaysSeen(): ?int
     {
         return $this->container['days_seen'];
     }
@@ -505,11 +475,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets days_seen
      *
-     * @param int $days_seen On how many days.
+     * @param int|null $days_seen On how many days.
      *
      * @return $this
      */
-    public function setDaysSeen(int $days_seen): static
+    public function setDaysSeen(?int $days_seen): static
     {
         if (is_null($days_seen)) {
             throw new InvalidArgumentException('non-nullable days_seen cannot be null');
@@ -522,9 +492,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets num_ports
      *
-     * @return int
+     * @return int|null
      */
-    public function getNumPorts(): int
+    public function getNumPorts(): ?int
     {
         return $this->container['num_ports'];
     }
@@ -532,11 +502,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets num_ports
      *
-     * @param int $num_ports Distinct ports over the window.
+     * @param int|null $num_ports Distinct ports over the window.
      *
      * @return $this
      */
-    public function setNumPorts(int $num_ports): static
+    public function setNumPorts(?int $num_ports): static
     {
         if (is_null($num_ports)) {
             throw new InvalidArgumentException('non-nullable num_ports cannot be null');
@@ -549,9 +519,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets peak_num_ports
      *
-     * @return int
+     * @return int|null
      */
-    public function getPeakNumPorts(): int
+    public function getPeakNumPorts(): ?int
     {
         return $this->container['peak_num_ports'];
     }
@@ -559,11 +529,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets peak_num_ports
      *
-     * @param int $peak_num_ports The most on one day.
+     * @param int|null $peak_num_ports The most on one day.
      *
      * @return $this
      */
-    public function setPeakNumPorts(int $peak_num_ports): static
+    public function setPeakNumPorts(?int $peak_num_ports): static
     {
         if (is_null($peak_num_ports)) {
             throw new InvalidArgumentException('non-nullable peak_num_ports cannot be null');
@@ -576,9 +546,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets indexer
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getIndexer(): bool
+    public function getIndexer(): ?bool
     {
         return $this->container['indexer'];
     }
@@ -586,11 +556,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets indexer
      *
-     * @param bool $indexer A DHT indexer rather than people.
+     * @param bool|null $indexer A DHT indexer rather than people.
      *
      * @return $this
      */
-    public function setIndexer(bool $indexer): static
+    public function setIndexer(?bool $indexer): static
     {
         if (is_null($indexer)) {
             throw new InvalidArgumentException('non-nullable indexer cannot be null');
@@ -603,9 +573,9 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets clients
      *
-     * @return string[]
+     * @return string[]|null
      */
-    public function getClients(): array
+    public function getClients(): ?array
     {
         return $this->container['clients'];
     }
@@ -613,11 +583,11 @@ class BitTorrentDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets clients
      *
-     * @param string[] $clients The two-letter codes its clients name themselves by.
+     * @param string[]|null $clients The two-letter codes its clients name themselves by.
      *
      * @return $this
      */
-    public function setClients(array $clients): static
+    public function setClients(?array $clients): static
     {
         if (is_null($clients)) {
             throw new InvalidArgumentException('non-nullable clients cannot be null');

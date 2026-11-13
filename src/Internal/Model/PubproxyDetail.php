@@ -294,27 +294,6 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['entry'] === null) {
-            $invalidProperties[] = "'entry' can't be null";
-        }
-        if ($this->container['exit'] === null) {
-            $invalidProperties[] = "'exit' can't be null";
-        }
-        if ($this->container['protocols'] === null) {
-            $invalidProperties[] = "'protocols' can't be null";
-        }
-        if ($this->container['num_ports'] === null) {
-            $invalidProperties[] = "'num_ports' can't be null";
-        }
-        if ($this->container['num_proxies'] === null) {
-            $invalidProperties[] = "'num_proxies' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
-        if ($this->container['last_usable'] === null) {
-            $invalidProperties[] = "'last_usable' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -330,9 +309,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets entry
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getEntry(): bool
+    public function getEntry(): ?bool
     {
         return $this->container['entry'];
     }
@@ -340,11 +319,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets entry
      *
-     * @param bool $entry A public proxy listens here.
+     * @param bool|null $entry A public proxy listens here.
      *
      * @return $this
      */
-    public function setEntry(bool $entry): static
+    public function setEntry(?bool $entry): static
     {
         if (is_null($entry)) {
             throw new InvalidArgumentException('non-nullable entry cannot be null');
@@ -357,9 +336,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets exit
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getExit(): bool
+    public function getExit(): ?bool
     {
         return $this->container['exit'];
     }
@@ -367,11 +346,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets exit
      *
-     * @param bool $exit Public proxies' traffic leaves from here.
+     * @param bool|null $exit Public proxies' traffic leaves from here.
      *
      * @return $this
      */
-    public function setExit(bool $exit): static
+    public function setExit(?bool $exit): static
     {
         if (is_null($exit)) {
             throw new InvalidArgumentException('non-nullable exit cannot be null');
@@ -384,9 +363,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets protocols
      *
-     * @return string[]
+     * @return string[]|null
      */
-    public function getProtocols(): array
+    public function getProtocols(): ?array
     {
         return $this->container['protocols'];
     }
@@ -394,11 +373,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets protocols
      *
-     * @param string[] $protocols The protocols at either end, `[]` when unknown.
+     * @param string[]|null $protocols The protocols at either end, `[]` when unknown.
      *
      * @return $this
      */
-    public function setProtocols(array $protocols): static
+    public function setProtocols(?array $protocols): static
     {
         if (is_null($protocols)) {
             throw new InvalidArgumentException('non-nullable protocols cannot be null');
@@ -411,9 +390,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets num_ports
      *
-     * @return int
+     * @return int|null
      */
-    public function getNumPorts(): int
+    public function getNumPorts(): ?int
     {
         return $this->container['num_ports'];
     }
@@ -421,11 +400,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets num_ports
      *
-     * @param int $num_ports How many ports a proxy listens on here.
+     * @param int|null $num_ports How many ports a proxy listens on here.
      *
      * @return $this
      */
-    public function setNumPorts(int $num_ports): static
+    public function setNumPorts(?int $num_ports): static
     {
         if (is_null($num_ports)) {
             throw new InvalidArgumentException('non-nullable num_ports cannot be null');
@@ -438,9 +417,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets num_proxies
      *
-     * @return int
+     * @return int|null
      */
-    public function getNumProxies(): int
+    public function getNumProxies(): ?int
     {
         return $this->container['num_proxies'];
     }
@@ -448,11 +427,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets num_proxies
      *
-     * @param int $num_proxies How many proxies' traffic left from here.
+     * @param int|null $num_proxies How many proxies' traffic left from here.
      *
      * @return $this
      */
-    public function setNumProxies(int $num_proxies): static
+    public function setNumProxies(?int $num_proxies): static
     {
         if (is_null($num_proxies)) {
             throw new InvalidArgumentException('non-nullable num_proxies cannot be null');
@@ -465,9 +444,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -475,11 +454,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day one was seen.
+     * @param string|null $last_seen The last day one was seen.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');
@@ -492,9 +471,9 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_usable
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastUsable(): string
+    public function getLastUsable(): ?string
     {
         return $this->container['last_usable'];
     }
@@ -502,11 +481,11 @@ class PubproxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_usable
      *
-     * @param string $last_usable The last day one answered a request, empty when none did.
+     * @param string|null $last_usable The last day one answered a request, empty when none did.
      *
      * @return $this
      */
-    public function setLastUsable(string $last_usable): static
+    public function setLastUsable(?string $last_usable): static
     {
         if (is_null($last_usable)) {
             throw new InvalidArgumentException('non-nullable last_usable cannot be null');

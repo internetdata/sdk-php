@@ -47,10 +47,10 @@ final class PubproxyDetail
     /** @internal */
     public static function fromWire(WirePubproxyDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             entry: $w->getEntry(),
             exit: $w->getExit(),
-            protocols: array_values($w->getProtocols()),
+            protocols: $w->getProtocols() === null ? null : array_values($w->getProtocols()),
             numPorts: $w->getNumPorts(),
             numProxies: $w->getNumProxies(),
             lastSeen: $w->getLastSeen(),

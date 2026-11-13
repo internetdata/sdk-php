@@ -294,27 +294,6 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['provider'] === null) {
-            $invalidProperties[] = "'provider' can't be null";
-        }
-        if ($this->container['provider_name'] === null) {
-            $invalidProperties[] = "'provider_name' can't be null";
-        }
-        if ($this->container['orbit'] === null) {
-            $invalidProperties[] = "'orbit' can't be null";
-        }
-        if ($this->container['segment'] === null) {
-            $invalidProperties[] = "'segment' can't be null";
-        }
-        if ($this->container['country'] === null) {
-            $invalidProperties[] = "'country' can't be null";
-        }
-        if ($this->container['asn'] === null) {
-            $invalidProperties[] = "'asn' can't be null";
-        }
-        if ($this->container['confidence'] === null) {
-            $invalidProperties[] = "'confidence' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -330,9 +309,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets provider
      *
-     * @return string
+     * @return string|null
      */
-    public function getProvider(): string
+    public function getProvider(): ?string
     {
         return $this->container['provider'];
     }
@@ -340,11 +319,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets provider
      *
-     * @param string $provider The operator's ID in Satellite IP Provider.
+     * @param string|null $provider The operator's ID in Satellite IP Provider.
      *
      * @return $this
      */
-    public function setProvider(string $provider): static
+    public function setProvider(?string $provider): static
     {
         if (is_null($provider)) {
             throw new InvalidArgumentException('non-nullable provider cannot be null');
@@ -357,9 +336,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets provider_name
      *
-     * @return string
+     * @return string|null
      */
-    public function getProviderName(): string
+    public function getProviderName(): ?string
     {
         return $this->container['provider_name'];
     }
@@ -367,11 +346,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets provider_name
      *
-     * @param string $provider_name The operator's name.
+     * @param string|null $provider_name The operator's name.
      *
      * @return $this
      */
-    public function setProviderName(string $provider_name): static
+    public function setProviderName(?string $provider_name): static
     {
         if (is_null($provider_name)) {
             throw new InvalidArgumentException('non-nullable provider_name cannot be null');
@@ -384,9 +363,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets orbit
      *
-     * @return string
+     * @return string|null
      */
-    public function getOrbit(): string
+    public function getOrbit(): ?string
     {
         return $this->container['orbit'];
     }
@@ -394,11 +373,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets orbit
      *
-     * @param string $orbit The orbit: `leo`, `meo` or `geo`.
+     * @param string|null $orbit The orbit: `leo`, `meo` or `geo`.
      *
      * @return $this
      */
-    public function setOrbit(string $orbit): static
+    public function setOrbit(?string $orbit): static
     {
         if (is_null($orbit)) {
             throw new InvalidArgumentException('non-nullable orbit cannot be null');
@@ -411,9 +390,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets segment
      *
-     * @return string
+     * @return string|null
      */
-    public function getSegment(): string
+    public function getSegment(): ?string
     {
         return $this->container['segment'];
     }
@@ -421,11 +400,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets segment
      *
-     * @param string $segment Who the space serves, such as consumer or maritime.
+     * @param string|null $segment Who the space serves, such as consumer or maritime.
      *
      * @return $this
      */
-    public function setSegment(string $segment): static
+    public function setSegment(?string $segment): static
     {
         if (is_null($segment)) {
             throw new InvalidArgumentException('non-nullable segment cannot be null');
@@ -438,9 +417,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets country
      *
-     * @return string
+     * @return string|null
      */
-    public function getCountry(): string
+    public function getCountry(): ?string
     {
         return $this->container['country'];
     }
@@ -448,11 +427,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets country
      *
-     * @param string $country ISO 3166 country code.
+     * @param string|null $country ISO 3166 country code.
      *
      * @return $this
      */
-    public function setCountry(string $country): static
+    public function setCountry(?string $country): static
     {
         if (is_null($country)) {
             throw new InvalidArgumentException('non-nullable country cannot be null');
@@ -465,9 +444,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets asn
      *
-     * @return int
+     * @return int|null
      */
-    public function getAsn(): int
+    public function getAsn(): ?int
     {
         return $this->container['asn'];
     }
@@ -475,11 +454,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets asn
      *
-     * @param int $asn The AS the operator announces it from.
+     * @param int|null $asn The AS the operator announces it from.
      *
      * @return $this
      */
-    public function setAsn(int $asn): static
+    public function setAsn(?int $asn): static
     {
         if (is_null($asn)) {
             throw new InvalidArgumentException('non-nullable asn cannot be null');
@@ -492,9 +471,9 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets confidence
      *
-     * @return string
+     * @return string|null
      */
-    public function getConfidence(): string
+    public function getConfidence(): ?string
     {
         return $this->container['confidence'];
     }
@@ -502,11 +481,11 @@ class SatelliteDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets confidence
      *
-     * @param string $confidence `high`, `medium` or `low`.
+     * @param string|null $confidence `high`, `medium` or `low`.
      *
      * @return $this
      */
-    public function setConfidence(string $confidence): static
+    public function setConfidence(?string $confidence): static
     {
         if (is_null($confidence)) {
             throw new InvalidArgumentException('non-nullable confidence cannot be null');

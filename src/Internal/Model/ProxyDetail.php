@@ -294,27 +294,6 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['provider'] === null) {
-            $invalidProperties[] = "'provider' can't be null";
-        }
-        if ($this->container['provider_name'] === null) {
-            $invalidProperties[] = "'provider_name' can't be null";
-        }
-        if ($this->container['first_seen'] === null) {
-            $invalidProperties[] = "'first_seen' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
-        if ($this->container['hits'] === null) {
-            $invalidProperties[] = "'hits' can't be null";
-        }
-        if ($this->container['hits_days_pct'] === null) {
-            $invalidProperties[] = "'hits_days_pct' can't be null";
-        }
-        if ($this->container['providers_num'] === null) {
-            $invalidProperties[] = "'providers_num' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -330,9 +309,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets provider
      *
-     * @return string
+     * @return string|null
      */
-    public function getProvider(): string
+    public function getProvider(): ?string
     {
         return $this->container['provider'];
     }
@@ -340,11 +319,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets provider
      *
-     * @param string $provider The proxy pool's ID in its catalog, empty where unattributed.
+     * @param string|null $provider The proxy pool's ID in its catalog, empty where unattributed.
      *
      * @return $this
      */
-    public function setProvider(string $provider): static
+    public function setProvider(?string $provider): static
     {
         if (is_null($provider)) {
             throw new InvalidArgumentException('non-nullable provider cannot be null');
@@ -357,9 +336,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets provider_name
      *
-     * @return string
+     * @return string|null
      */
-    public function getProviderName(): string
+    public function getProviderName(): ?string
     {
         return $this->container['provider_name'];
     }
@@ -367,11 +346,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets provider_name
      *
-     * @param string $provider_name The name the catalog gives it.
+     * @param string|null $provider_name The name the catalog gives it.
      *
      * @return $this
      */
-    public function setProviderName(string $provider_name): static
+    public function setProviderName(?string $provider_name): static
     {
         if (is_null($provider_name)) {
             throw new InvalidArgumentException('non-nullable provider_name cannot be null');
@@ -384,9 +363,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets first_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getFirstSeen(): string
+    public function getFirstSeen(): ?string
     {
         return $this->container['first_seen'];
     }
@@ -394,11 +373,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets first_seen
      *
-     * @param string $first_seen The first day of the window the address was seen as an exit.
+     * @param string|null $first_seen The first day of the window the address was seen as an exit.
      *
      * @return $this
      */
-    public function setFirstSeen(string $first_seen): static
+    public function setFirstSeen(?string $first_seen): static
     {
         if (is_null($first_seen)) {
             throw new InvalidArgumentException('non-nullable first_seen cannot be null');
@@ -411,9 +390,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -421,11 +400,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day it was.
+     * @param string|null $last_seen The last day it was.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');
@@ -438,9 +417,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets hits
      *
-     * @return int
+     * @return int|null
      */
-    public function getHits(): int
+    public function getHits(): ?int
     {
         return $this->container['hits'];
     }
@@ -448,11 +427,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets hits
      *
-     * @param int $hits How many times it was seen in the window.
+     * @param int|null $hits How many times it was seen in the window.
      *
      * @return $this
      */
-    public function setHits(int $hits): static
+    public function setHits(?int $hits): static
     {
         if (is_null($hits)) {
             throw new InvalidArgumentException('non-nullable hits cannot be null');
@@ -465,9 +444,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets hits_days_pct
      *
-     * @return int
+     * @return int|null
      */
-    public function getHitsDaysPct(): int
+    public function getHitsDaysPct(): ?int
     {
         return $this->container['hits_days_pct'];
     }
@@ -475,11 +454,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets hits_days_pct
      *
-     * @param int $hits_days_pct On what share of the window's days, in percent.
+     * @param int|null $hits_days_pct On what share of the window's days, in percent.
      *
      * @return $this
      */
-    public function setHitsDaysPct(int $hits_days_pct): static
+    public function setHitsDaysPct(?int $hits_days_pct): static
     {
         if (is_null($hits_days_pct)) {
             throw new InvalidArgumentException('non-nullable hits_days_pct cannot be null');
@@ -492,9 +471,9 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets providers_num
      *
-     * @return int
+     * @return int|null
      */
-    public function getProvidersNum(): int
+    public function getProvidersNum(): ?int
     {
         return $this->container['providers_num'];
     }
@@ -502,11 +481,11 @@ class ProxyDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets providers_num
      *
-     * @param int $providers_num How many pools it was seen in.
+     * @param int|null $providers_num How many pools it was seen in.
      *
      * @return $this
      */
-    public function setProvidersNum(int $providers_num): static
+    public function setProvidersNum(?int $providers_num): static
     {
         if (is_null($providers_num)) {
             throw new InvalidArgumentException('non-nullable providers_num cannot be null');

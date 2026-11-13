@@ -43,7 +43,7 @@ final class SatelliteDetail
     /** @internal */
     public static function fromWire(WireSatelliteDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             provider: $w->getProvider(),
             providerName: $w->getProviderName(),
             orbit: $w->getOrbit(),

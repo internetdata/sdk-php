@@ -280,21 +280,6 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['name'] === null) {
-            $invalidProperties[] = "'name' can't be null";
-        }
-        if ($this->container['mcc'] === null) {
-            $invalidProperties[] = "'mcc' can't be null";
-        }
-        if ($this->container['mnc'] === null) {
-            $invalidProperties[] = "'mnc' can't be null";
-        }
-        if ($this->container['country'] === null) {
-            $invalidProperties[] = "'country' can't be null";
-        }
-        if ($this->container['confidence'] === null) {
-            $invalidProperties[] = "'confidence' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -310,9 +295,9 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets name
      *
-     * @return string
+     * @return string|null
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->container['name'];
     }
@@ -320,11 +305,11 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets name
      *
-     * @param string $name The mobile carrier.
+     * @param string|null $name The mobile carrier.
      *
      * @return $this
      */
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
         if (is_null($name)) {
             throw new InvalidArgumentException('non-nullable name cannot be null');
@@ -337,9 +322,9 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets mcc
      *
-     * @return string
+     * @return string|null
      */
-    public function getMcc(): string
+    public function getMcc(): ?string
     {
         return $this->container['mcc'];
     }
@@ -347,11 +332,11 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets mcc
      *
-     * @param string $mcc Its mobile country code.
+     * @param string|null $mcc Its mobile country code.
      *
      * @return $this
      */
-    public function setMcc(string $mcc): static
+    public function setMcc(?string $mcc): static
     {
         if (is_null($mcc)) {
             throw new InvalidArgumentException('non-nullable mcc cannot be null');
@@ -364,9 +349,9 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets mnc
      *
-     * @return string
+     * @return string|null
      */
-    public function getMnc(): string
+    public function getMnc(): ?string
     {
         return $this->container['mnc'];
     }
@@ -374,11 +359,11 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets mnc
      *
-     * @param string $mnc Its mobile network code.
+     * @param string|null $mnc Its mobile network code.
      *
      * @return $this
      */
-    public function setMnc(string $mnc): static
+    public function setMnc(?string $mnc): static
     {
         if (is_null($mnc)) {
             throw new InvalidArgumentException('non-nullable mnc cannot be null');
@@ -391,9 +376,9 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets country
      *
-     * @return string
+     * @return string|null
      */
-    public function getCountry(): string
+    public function getCountry(): ?string
     {
         return $this->container['country'];
     }
@@ -401,11 +386,11 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets country
      *
-     * @param string $country ISO 3166 country code.
+     * @param string|null $country ISO 3166 country code.
      *
      * @return $this
      */
-    public function setCountry(string $country): static
+    public function setCountry(?string $country): static
     {
         if (is_null($country)) {
             throw new InvalidArgumentException('non-nullable country cannot be null');
@@ -418,9 +403,9 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets confidence
      *
-     * @return string
+     * @return string|null
      */
-    public function getConfidence(): string
+    public function getConfidence(): ?string
     {
         return $this->container['confidence'];
     }
@@ -428,11 +413,11 @@ class CarrierDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets confidence
      *
-     * @param string $confidence `high`, `medium` or `low`.
+     * @param string|null $confidence `high`, `medium` or `low`.
      *
      * @return $this
      */
-    public function setConfidence(string $confidence): static
+    public function setConfidence(?string $confidence): static
     {
         if (is_null($confidence)) {
             throw new InvalidArgumentException('non-nullable confidence cannot be null');

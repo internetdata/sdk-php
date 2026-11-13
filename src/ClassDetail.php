@@ -36,7 +36,7 @@ final class ClassDetail
     /** @internal */
     public static function fromWire(WireClassDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             provider: $w->getProvider(),
             providerName: $w->getProviderName(),
             confidence: $w->getConfidence(),

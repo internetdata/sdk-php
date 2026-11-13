@@ -287,24 +287,6 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     {
         $invalidProperties = [];
 
-        if ($this->container['port'] === null) {
-            $invalidProperties[] = "'port' can't be null";
-        }
-        if ($this->container['recursion_available'] === null) {
-            $invalidProperties[] = "'recursion_available' can't be null";
-        }
-        if ($this->container['rcode'] === null) {
-            $invalidProperties[] = "'rcode' can't be null";
-        }
-        if ($this->container['answer_correct'] === null) {
-            $invalidProperties[] = "'answer_correct' can't be null";
-        }
-        if ($this->container['first_seen'] === null) {
-            $invalidProperties[] = "'first_seen' can't be null";
-        }
-        if ($this->container['last_seen'] === null) {
-            $invalidProperties[] = "'last_seen' can't be null";
-        }
         return $invalidProperties;
     }
 
@@ -320,9 +302,9 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets port
      *
-     * @return int
+     * @return int|null
      */
-    public function getPort(): int
+    public function getPort(): ?int
     {
         return $this->container['port'];
     }
@@ -330,11 +312,11 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets port
      *
-     * @param int $port The port it answered on.
+     * @param int|null $port The port it answered on.
      *
      * @return $this
      */
-    public function setPort(int $port): static
+    public function setPort(?int $port): static
     {
         if (is_null($port)) {
             throw new InvalidArgumentException('non-nullable port cannot be null');
@@ -347,9 +329,9 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets recursion_available
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getRecursionAvailable(): bool
+    public function getRecursionAvailable(): ?bool
     {
         return $this->container['recursion_available'];
     }
@@ -357,11 +339,11 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets recursion_available
      *
-     * @param bool $recursion_available It offered recursion.
+     * @param bool|null $recursion_available It offered recursion.
      *
      * @return $this
      */
-    public function setRecursionAvailable(bool $recursion_available): static
+    public function setRecursionAvailable(?bool $recursion_available): static
     {
         if (is_null($recursion_available)) {
             throw new InvalidArgumentException('non-nullable recursion_available cannot be null');
@@ -374,9 +356,9 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets rcode
      *
-     * @return int
+     * @return int|null
      */
-    public function getRcode(): int
+    public function getRcode(): ?int
     {
         return $this->container['rcode'];
     }
@@ -384,11 +366,11 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets rcode
      *
-     * @param int $rcode Its answer's response code.
+     * @param int|null $rcode Its answer's response code.
      *
      * @return $this
      */
-    public function setRcode(int $rcode): static
+    public function setRcode(?int $rcode): static
     {
         if (is_null($rcode)) {
             throw new InvalidArgumentException('non-nullable rcode cannot be null');
@@ -401,9 +383,9 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets answer_correct
      *
-     * @return bool
+     * @return bool|null
      */
-    public function getAnswerCorrect(): bool
+    public function getAnswerCorrect(): ?bool
     {
         return $this->container['answer_correct'];
     }
@@ -411,11 +393,11 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets answer_correct
      *
-     * @param bool $answer_correct Its answer was right.
+     * @param bool|null $answer_correct Its answer was right.
      *
      * @return $this
      */
-    public function setAnswerCorrect(bool $answer_correct): static
+    public function setAnswerCorrect(?bool $answer_correct): static
     {
         if (is_null($answer_correct)) {
             throw new InvalidArgumentException('non-nullable answer_correct cannot be null');
@@ -428,9 +410,9 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets first_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getFirstSeen(): string
+    public function getFirstSeen(): ?string
     {
         return $this->container['first_seen'];
     }
@@ -438,11 +420,11 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets first_seen
      *
-     * @param string $first_seen The first day it answered.
+     * @param string|null $first_seen The first day it answered.
      *
      * @return $this
      */
-    public function setFirstSeen(string $first_seen): static
+    public function setFirstSeen(?string $first_seen): static
     {
         if (is_null($first_seen)) {
             throw new InvalidArgumentException('non-nullable first_seen cannot be null');
@@ -455,9 +437,9 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets last_seen
      *
-     * @return string
+     * @return string|null
      */
-    public function getLastSeen(): string
+    public function getLastSeen(): ?string
     {
         return $this->container['last_seen'];
     }
@@ -465,11 +447,11 @@ class DnsResolverDetail implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets last_seen
      *
-     * @param string $last_seen The last day it did.
+     * @param string|null $last_seen The last day it did.
      *
      * @return $this
      */
-    public function setLastSeen(string $last_seen): static
+    public function setLastSeen(?string $last_seen): static
     {
         if (is_null($last_seen)) {
             throw new InvalidArgumentException('non-nullable last_seen cannot be null');

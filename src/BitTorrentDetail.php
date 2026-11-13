@@ -54,7 +54,7 @@ final class BitTorrentDetail
     /** @internal */
     public static function fromWire(WireBitTorrentDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             verified: $w->getVerified(),
             idMatchesIp: $w->getIdMatchesIp(),
             firstSeen: $w->getFirstSeen(),
@@ -64,7 +64,7 @@ final class BitTorrentDetail
             numPorts: $w->getNumPorts(),
             peakNumPorts: $w->getPeakNumPorts(),
             indexer: $w->getIndexer(),
-            clients: array_values($w->getClients()),
+            clients: $w->getClients() === null ? null : array_values($w->getClients()),
         );
     }
 }

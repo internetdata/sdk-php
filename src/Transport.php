@@ -310,10 +310,6 @@ final class Transport
      * or null when none does. A typed getter refuses such a member only when
      * something reads it, and nothing reads a checksum answer's `id` or
      * `format`, so through 2.7.2 an answer without them came back as one.
-     *
-     * A lookup's detail object is the one exception: the API answers `{}` under
-     * a false flag (`tor` beside `is_tor`), present and empty, though a populated
-     * one carries every member its schema requires.
      */
     private static function unmet(mixed $value, string $type, string $at): ?string
     {
@@ -335,14 +331,8 @@ final class Transport
                 return sprintf('%s that breaks the spec (%s)', $at === '' ? 'an answer' : $at, $invalid[0]);
             }
             $wire = $value::attributeMap();
-            $types = $value::openAPITypes();
-            foreach ($types as $property => $memberType) {
-                $item = $value[$property];
-                $detail = $item instanceof ModelInterface && isset($types["is_{$property}"]);
-                if ($detail && self::isEmpty($item)) {
-                    continue;
-                }
-                $children[$at === '' ? $wire[$property] : "{$at}.{$wire[$property]}"] = [$item, $memberType];
+            foreach ($value::openAPITypes() as $property => $memberType) {
+                $children[$at === '' ? $wire[$property] : "{$at}.{$wire[$property]}"] = [$value[$property], $memberType];
             }
         }
         foreach ($children as $path => [$item, $itemType]) {
@@ -352,21 +342,6 @@ final class Transport
             }
         }
         return null;
-    }
-
-    /**
-     * Whether a generated model holds no member at all, as one read from `{}`.
-     *
-     * @internal
-     */
-    public static function isEmpty(ModelInterface $model): bool
-    {
-        foreach (array_keys($model::openAPITypes()) as $property) {
-            if ($model[$property] !== null) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

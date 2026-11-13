@@ -38,7 +38,7 @@ final class CarrierDetail
     /** @internal */
     public static function fromWire(WireCarrierDetail $w): self
     {
-        return Transport::isEmpty($w) ? new self() : new self(
+        return new self(
             name: $w->getName(),
             mcc: $w->getMcc(),
             mnc: $w->getMnc(),
