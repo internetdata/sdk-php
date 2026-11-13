@@ -119,7 +119,9 @@ final class Client
      * What every database says about one address.
      *
      * A bogon is answered locally and never reaches the network. Everything else
-     * is served, then cached for this instance.
+     * is served, then cached for this instance. A string that is not an IP
+     * address is refused as a `bad_request` before anything is sent: an AS is
+     * `lookupAsn`'s, and a domain `lookupDomain`'s.
      *
      * @param array{retries?: int, timeout?: float} $options Per-call overrides.
      * @throws InternetDataException
@@ -351,6 +353,18 @@ final class Client
     {
         // Judged, sent and cached as the IPv4 address an IPv4-mapped one carries.
         $ip = Bogon::unmapped($ip);
+        // The API answers an AS or a domain at this path too, as an answer this
+        // call cannot read: a domain cost three retried server_errors.
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            return Create::rejectionFor(new InternetDataException(
+                ErrorKind::BadRequest,
+                sprintf(
+                    "'%s' is not an IP address: look up an AS with lookupAsn, and a domain with lookupDomain",
+                    $ip,
+                ),
+                null,
+            ));
+        }
         if (Bogon::isBogon($ip)) {
             return Create::promiseFor(Bogon::result($ip));
         }

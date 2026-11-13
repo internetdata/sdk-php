@@ -146,6 +146,23 @@ final class LookupTest extends TestCase
         self::assertSame(['/api/v1/entitlement'], $paths);
     }
 
+    public function testALookupOfADomainIsRefusedWithNothingSent(): void
+    {
+        $paths = [];
+        $client = Staging::keyless(Staging::BASE_URL, static function (array $fact) use (&$paths): void {
+            $paths[] = $fact['path'];
+        });
+
+        try {
+            $client->lookup('example.com');
+            self::fail('a domain was looked up as an address');
+        } catch (InternetDataException $e) {
+            self::assertSame(ErrorKind::BadRequest, $e->kind);
+            self::assertStringContainsString('lookupDomain', $e->getMessage());
+        }
+        self::assertSame([], $paths);
+    }
+
     public function testABogonIsAnsweredWithoutTouchingTheNetwork(): void
     {
         $offline = new Client(new Options(

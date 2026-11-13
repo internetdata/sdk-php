@@ -60,7 +60,7 @@ $domain->hasMx;          // whether it has MX records
 $domain->dns->mx;        // the records themselves, on a paid plan
 ```
 
-Unlike an address, an AS or a domain is never cached and has no batch.
+Unlike an address, an AS or a domain is never cached and has no batch. `lookup` takes an IP address alone, and refuses anything else as a `bad_request` before sending it.
 
 ### Your own address
 

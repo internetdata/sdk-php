@@ -402,6 +402,39 @@ final class LookupTest extends TestCase
         self::assertTrue($result->relay->isEmpty());
     }
 
+    /**
+     * This API answers an AS or a domain at the address path too, so a domain
+     * sent there came back as an answer the call could not read, three retried
+     * server_errors. It is refused before anything is sent, once, naming the two
+     * calls that do take it.
+     */
+    public function testALookupOfWhatIsNotAnAddressIsRefusedBeforeAnythingIsSent(): void
+    {
+        $stub = self::addressStub();
+        $client = new Client(new Options(retries: 3, httpClient: $stub->client));
+
+        $notAddresses = ['example.com', 'AS15169', '15169', 'notanip', '', ' 9.9.9.1', '9.9.9.1/32', '256.1.1.1'];
+        foreach ([...$notAddresses, 'fe80::1%eth0'] as $not) {
+            try {
+                $client->lookup($not);
+                self::fail(json_encode($not) . ' was looked up');
+            } catch (InternetDataException $e) {
+                self::assertSame(ErrorKind::BadRequest, $e->kind, json_encode($not));
+                self::assertFalse($e->isRetryable(), json_encode($not));
+                self::assertNull($e->status, json_encode($not) . ': no request, so no status');
+                self::assertStringContainsString('lookupAsn', $e->getMessage());
+                self::assertStringContainsString('lookupDomain', $e->getMessage());
+            }
+        }
+        self::assertSame([], $stub->calls, 'nothing was sent');
+
+        // An address in any spelling still goes out, and a batch leaves the check to the API.
+        self::assertSame('9.9.9.1', $client->lookup('::ffff:9.9.9.1')->ip);
+        $batch = $client->lookupBatch(['9.9.9.2', 'notanip']);
+        self::assertInstanceOf(InternetDataException::class, $batch['notanip']);
+        self::assertSame(['/9.9.9.1', '/batch'], $stub->calls);
+    }
+
     public function testABatchAnswerItCannotReadIsEveryAddressesRetriedServerError(): void
     {
         $bodies = [
