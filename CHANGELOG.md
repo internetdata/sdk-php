@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.9.0 - 2026-11-13
+
+### Features
+
+- Look up an address, an AS or a domain, on api.internetdata.io ([`69ef247`](https://github.com/internetdata/sdk-php/commit/69ef247f9f58ff4ecc8bade1c4e7d0a276a1efd6))
+- Re-pin the spec to 2026.11.13: the lookups and the entitlement ([`78df64d`](https://github.com/internetdata/sdk-php/commit/78df64dba1865e3630ec687936eb11578a9ed295))
+
 ## 2.8.1 - 2026-11-09
 
 ### Fixes
