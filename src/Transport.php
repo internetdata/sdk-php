@@ -24,6 +24,8 @@ use ValueError;
  *
  * Nothing in Guzzle knows about a server-supplied `Retry-After`, and honoring it
  * is most of the logic, so the schedule is here rather than in a middleware.
+ * Middleware would also be fixed at client construction, and the retry count is
+ * overridable per call.
  */
 final class Transport
 {
@@ -49,16 +51,16 @@ final class Transport
 
     public function __construct(
         private readonly ClientInterface $http,
-        private readonly int $retries,
+        private readonly int $defaultRetries,
         private readonly float $timeout,
     ) {
     }
 
-    public function send(RequestInterface $request): ResponseInterface
+    public function send(RequestInterface $request, ?int $retries = null): ResponseInterface
     {
         // The declared return type is what enforces the narrowing: `wait()` is
         // typed `mixed`, and strict_types turns anything else into a TypeError.
-        return $this->sendAsync($request)->wait();
+        return $this->sendAsync($request, $retries)->wait();
     }
 
     /**
@@ -99,7 +101,7 @@ final class Transport
             : [RequestOptions::TIMEOUT => $timeout, RequestOptions::CONNECT_TIMEOUT => $timeout];
         return $this->attempt(
             $request,
-            $retries ?? $this->retries,
+            $retries ?? $this->defaultRetries,
             0,
             0,
             $bound,
@@ -127,7 +129,7 @@ final class Transport
     {
         return $this->attempt(
             $request,
-            $this->retries,
+            $this->defaultRetries,
             0,
             0,
             [
@@ -158,17 +160,30 @@ final class Transport
     /**
      * @template T of object
      * @param class-string<T> $class
+     * @param bool $stored Whether the body is an answer this client stored and
+     *        re-encoded, where an empty object reads back as `[]`.
      * @return T
      */
-    public static function toModel(ResponseInterface $response, string $class): object
+    public static function toModel(string $body, string $class, ?int $status = null, bool $stored = false): object
     {
-        $status = $response->getStatusCode();
         try {
-            $decoded = json_decode((string) $response->getBody(), false, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($body, false, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw Errors::malformed($e->getMessage(), $status);
         }
-        $wrong = self::nonconforming($decoded, $class, '');
+        return self::fromDecoded($decoded, $class, $status, $stored);
+    }
+
+    /**
+     * The model a body decoded with objects reads as, refusing what toModel does.
+     *
+     * @template T of object
+     * @param class-string<T> $class
+     * @return T
+     */
+    public static function fromDecoded(mixed $decoded, string $class, ?int $status = null, bool $stored = false): object
+    {
+        $wrong = self::nonconforming($decoded, $class, '', null, $stored);
         if ($wrong !== null) {
             throw Errors::malformed(sprintf('the API answered %s of the wrong type', $wrong), $status);
         }
@@ -196,8 +211,13 @@ final class Transport
      * through 2.7.2 `updated: "x"` came back as the time of the call, and
      * 30 February as 2 March.
      */
-    private static function nonconforming(mixed $value, string $type, string $at, ?string $format = null): ?string
-    {
+    private static function nonconforming(
+        mixed $value,
+        string $type,
+        string $at,
+        ?string $format = null,
+        bool $stored = false,
+    ): ?string {
         if ($value === null) {
             return null;
         }
@@ -207,19 +227,26 @@ final class Transport
                 return $here;
             }
             foreach ($value as $i => $item) {
-                $wrong = $item === null ? "{$at}[{$i}]" : self::nonconforming($item, substr($type, 0, -2), "{$at}[{$i}]");
+                $wrong = $item === null
+                    ? "{$at}[{$i}]"
+                    : self::nonconforming($item, substr($type, 0, -2), "{$at}[{$i}]", null, $stored);
                 if ($wrong !== null) {
                     return $wrong;
                 }
             }
             return null;
         }
+        // PHP's arrays cannot tell `{}` from `[]`, so a stored answer that held an
+        // empty object reads back as an empty list, and is read as the object.
+        $object = $value instanceof \stdClass || ($stored && $value === []);
         if (preg_match('/^array<string,(.+)>$/', $type, $m) === 1) {
-            if (!$value instanceof \stdClass) {
+            if (!$object) {
                 return $here;
             }
-            foreach (get_object_vars($value) as $key => $item) {
-                $wrong = $item === null ? "{$at}.{$key}" : self::nonconforming($item, $m[1], "{$at}.{$key}");
+            foreach ((array) $value as $key => $item) {
+                $wrong = $item === null
+                    ? "{$at}.{$key}"
+                    : self::nonconforming($item, $m[1], "{$at}.{$key}", null, $stored);
                 if ($wrong !== null) {
                     return $wrong;
                 }
@@ -232,7 +259,7 @@ final class Transport
             'bool' => is_bool($value),
             'string' => is_string($value),
             '\DateTime' => is_string($value) && self::isDate($value, $format),
-            'object' => $value instanceof \stdClass,
+            'object' => $object,
             'mixed' => true,
             default => null,
         };
@@ -243,15 +270,18 @@ final class Transport
             return is_string($value) ? null : $here;
         }
         if (is_subclass_of($type, ModelInterface::class)) {
-            if (!$value instanceof \stdClass) {
+            if (!$object) {
                 return $here;
             }
+            $members = (array) $value;
             $wire = $type::attributeMap();
             $formats = $type::openAPIFormats();
             foreach ($type::openAPITypes() as $property => $memberType) {
                 $name = $wire[$property];
                 $path = $at === '' ? $name : "{$at}.{$name}";
-                $wrong = self::nonconforming($value->{$name} ?? null, $memberType, $path, $formats[$property] ?? null);
+                $wrong = self::nonconforming(
+                    $members[$name] ?? null, $memberType, $path, $formats[$property] ?? null, $stored,
+                );
                 if ($wrong !== null) {
                     return $wrong;
                 }
@@ -280,6 +310,10 @@ final class Transport
      * or null when none does. A typed getter refuses such a member only when
      * something reads it, and nothing reads a checksum answer's `id` or
      * `format`, so through 2.7.2 an answer without them came back as one.
+     *
+     * A lookup's detail object is the one exception: the API answers `{}` under
+     * a false flag (`tor` beside `is_tor`), present and empty, though a populated
+     * one carries every member its schema requires.
      */
     private static function unmet(mixed $value, string $type, string $at): ?string
     {
@@ -301,8 +335,14 @@ final class Transport
                 return sprintf('%s that breaks the spec (%s)', $at === '' ? 'an answer' : $at, $invalid[0]);
             }
             $wire = $value::attributeMap();
-            foreach ($value::openAPITypes() as $property => $memberType) {
-                $children[$at === '' ? $wire[$property] : "{$at}.{$wire[$property]}"] = [$value[$property], $memberType];
+            $types = $value::openAPITypes();
+            foreach ($types as $property => $memberType) {
+                $item = $value[$property];
+                $detail = $item instanceof ModelInterface && isset($types["is_{$property}"]);
+                if ($detail && self::isEmpty($item)) {
+                    continue;
+                }
+                $children[$at === '' ? $wire[$property] : "{$at}.{$wire[$property]}"] = [$item, $memberType];
             }
         }
         foreach ($children as $path => [$item, $itemType]) {
@@ -312,6 +352,21 @@ final class Transport
             }
         }
         return null;
+    }
+
+    /**
+     * Whether a generated model holds no member at all, as one read from `{}`.
+     *
+     * @internal
+     */
+    public static function isEmpty(ModelInterface $model): bool
+    {
+        foreach (array_keys($model::openAPITypes()) as $property) {
+            if ($model[$property] !== null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -344,7 +399,7 @@ final class Transport
         ];
         if ($delayMs > 0) {
             // Guzzle's curl handler SCHEDULES a delayed transfer rather than
-            // sleeping, which keeps a backoff off the calling thread.
+            // sleeping, so one address backing off does not stall a whole batch.
             $options[RequestOptions::DELAY] = $delayMs;
         }
 

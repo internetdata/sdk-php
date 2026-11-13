@@ -15,6 +15,10 @@ use Psr\Http\Message\RequestInterface;
 /**
  * An HTTP stand-in that answers from a table and records what it was asked for,
  * so "issued exactly one request" is asserted rather than assumed.
+ *
+ * Every response is returned as a promise that only settles when it is waited
+ * on, which is what lets a batch put several requests in flight at once without
+ * any test sleeping. `peak` is therefore the real maximum concurrency.
  */
 final class Stub
 {
@@ -35,6 +39,9 @@ final class Stub
 
     /** @var list<array<string, mixed>> The Guzzle options each call was sent with. */
     public array $options = [];
+
+    public int $inFlight = 0;
+    public int $peak = 0;
 
     public readonly GuzzleClient $client;
 
@@ -65,6 +72,71 @@ final class Stub
         return ['status' => 200, 'body' => $body];
     }
 
+    /**
+     * Routes for the address lookup, which lives at the root of the host.
+     *
+     * @param array<string, mixed> $byIp
+     * @return array<string, mixed>
+     */
+    public static function lookups(array $byIp): array
+    {
+        $routes = [];
+        foreach ($byIp as $ip => $spec) {
+            $routes['/' . $ip] = $spec;
+        }
+        return $routes;
+    }
+
+    /**
+     * The smallest answer a lookup serves: every member the spec requires, as
+     * Unlimited answers an address in no table, with `$members` laid over it.
+     *
+     * @param array<string, mixed> $members
+     * @return array<string, mixed>
+     */
+    public static function answer(string $ip, array $members = []): array
+    {
+        return array_merge([
+            'ip' => $ip,
+            'is_bogon' => false,
+            'is_tor' => false,
+            'is_relay' => false,
+            'is_anycast' => false,
+            'is_carrier' => false,
+            'is_satellite' => false,
+            'is_ssh' => false,
+            'is_smtp' => false,
+            'is_web' => false,
+            'is_dns_resolver' => false,
+            'is_bittorrent' => false,
+            // An empty PHP array goes on the wire as `[]`, a list, not `{}`.
+            'tor' => new \stdClass(),
+            'relay' => new \stdClass(),
+            'location' => [
+                'continent' => 'EU',
+                'continent_name' => 'Europe',
+                'country' => 'AT',
+                'country_name' => 'Austria',
+                'timezone' => 'Europe/Vienna',
+                'currency_code' => 'EUR',
+                'currency_name' => 'Euro',
+                'currency_symbol' => 'EUR',
+                'flag_emoji' => '',
+                'flag_unicode' => 'U+1F1E6 U+1F1F9',
+            ],
+            'asn' => [
+                'asn' => 9009,
+                'name' => 'M247 Europe SRL',
+                'domain' => 'm247global.com',
+                'type' => 'hosting',
+                'prefix' => '146.70.116.0/24',
+            ],
+            'company' => ['name' => 'M247 LTD Vienna Infrastructure', 'domain' => 'm247.ro'],
+            'hostname' => '',
+            'abuse' => ['email' => 'abuse@m247.ro'],
+        ], $members);
+    }
+
     /** A transfer that never produced a response at all. */
     public static function transportFailure(string $message = 'connection refused'): array
     {
@@ -81,13 +153,21 @@ final class Stub
     /** @param array<string, mixed> $options */
     private function handler(RequestInterface $request, array $options): PromiseInterface
     {
-        $this->calls[] = $request->getUri()->getPath();
+        $path = rawurldecode($request->getUri()->getPath());
+        $this->calls[] = $path;
         $this->delays[] = (int) ($options['delay'] ?? 0);
         $this->options[] = $options;
         $this->requests[] = $request;
+        $this->inFlight++;
+        $this->peak = max($this->peak, $this->inFlight);
 
-        $outcome = $this->responseFor($request->getUri()->getPath());
+        // A `/batch` route in the table is served as it stands, for a test of an
+        // answer the API itself would never give.
+        $outcome = $path === '/batch' && $request->getMethod() === 'POST' && !isset($this->routes[$path])
+            ? $this->batchResponse((string) $request->getBody())
+            : $this->responseFor($path);
         $promise = new Promise(function () use (&$promise, $outcome, $request): void {
+            $this->inFlight--;
             if (is_string($outcome)) {
                 $promise->reject(new ConnectException($outcome, $request));
                 return;
@@ -108,6 +188,37 @@ final class Stub
         $this->served[$path] = $n + 1;
         $spec = $specs[min($n, count($specs) - 1)];
         return $spec['reject'] ?? self::response($spec);
+    }
+
+    /**
+     * A POST /batch is answered the way the API answers one: every address the
+     * table knows is a result if its route is a 200 and an entry error otherwise,
+     * and an unknown address is the 400 the API gives a string that is not one.
+     * One call however many addresses, which is what the request counts measure.
+     */
+    private function batchResponse(string $body): Response
+    {
+        $results = [];
+        $errors = [];
+        $decoded = json_decode($body, true);
+        $ips = is_array($decoded) && is_array($decoded['ips'] ?? null) ? $decoded['ips'] : [];
+        foreach ($ips as $ip) {
+            $specs = $this->routes['/' . $ip] ?? null;
+            if ($specs === null) {
+                $errors[$ip] = ['status' => 400, 'error' => 'not a valid IP address, AS number or domain'];
+                continue;
+            }
+            $spec = $specs[0];
+            if (($spec['status'] ?? 200) === 200) {
+                $results[$ip] = $spec['body'] ?? null;
+            } else {
+                $errors[$ip] = ['status' => $spec['status'], 'error' => $spec['body']['error'] ?? ''];
+            }
+        }
+        return self::response([
+            'status' => 200,
+            'body' => ['results' => (object) $results, 'errors' => (object) $errors],
+        ]);
     }
 
     /** @param array<string, mixed> $spec */

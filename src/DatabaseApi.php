@@ -54,7 +54,7 @@ final class DatabaseApi
             $this->api->listDatabasesRequest(),
             static fn (ResponseInterface $r): array => array_map(
                 Database::fromWire(...),
-                Transport::toModel($r, DatabaseList::class)->getDatabases(),
+                self::model($r, DatabaseList::class)->getDatabases(),
             ),
         );
     }
@@ -70,7 +70,7 @@ final class DatabaseApi
         return $this->transport->read(
             $this->api->databaseMetadataV2Request($id),
             static fn (ResponseInterface $r): DatabaseMetadata
-                => DatabaseMetadata::fromWire(Transport::toModel($r, WireDatabaseMetadata::class)),
+                => DatabaseMetadata::fromWire(self::model($r, WireDatabaseMetadata::class)),
         );
     }
 
@@ -89,7 +89,7 @@ final class DatabaseApi
         return $this->transport->read(
             $this->api->databaseChecksumV2Request($id, WireFormat::from($format)),
             static fn (ResponseInterface $r): Checksums
-                => Checksums::fromWire(Transport::toModel($r, ChecksumsResponse::class)->getChecksums()),
+                => Checksums::fromWire(self::model($r, ChecksumsResponse::class)->getChecksums()),
         );
     }
 
@@ -109,7 +109,7 @@ final class DatabaseApi
             $this->api->listDownloadsRequest($limit),
             static fn (ResponseInterface $r): array => array_map(
                 Download::fromWire(...),
-                Transport::toModel($r, DownloadList::class)->getDownloads(),
+                self::model($r, DownloadList::class)->getDownloads(),
             ),
         );
     }
@@ -292,5 +292,19 @@ final class DatabaseApi
                 $response->getStatusCode(),
             );
         }
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @return T
+     */
+    private static function model(ResponseInterface $response, string $class): object
+    {
+        return Transport::toModel(
+            (string) $response->getBody(),
+            $class,
+            $response->getStatusCode(),
+        );
     }
 }

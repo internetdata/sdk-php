@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InternetData\Tests;
 
+use GuzzleHttp\Psr7\Uri;
 use InternetData\Client;
 use InternetData\DeviceAuthorization;
 use InternetData\InternetDataException;
@@ -22,7 +23,9 @@ use Throwable;
  */
 final class OauthTest extends TestCase
 {
-    private const BASE_URL = 'https://api.example.test';
+    // An apex, which the accessor uses as given: an `api.` host signs in at its
+    // apex instead, as testTheAuthorizationServerIsTheApexOfTheApiHost pins.
+    private const BASE_URL = 'https://example.test';
     private const DEVICE_CODE_GRANT = 'urn:ietf:params:oauth:grant-type:device_code';
 
     // Satisfies every operation's required members at once.
@@ -275,6 +278,35 @@ final class OauthTest extends TestCase
 
             self::assertSame($case['expect'], $url, $case['name']);
             self::assertSame([], $stub->requests, $case['name']);
+        }
+    }
+
+    /**
+     * The API answers lookups on its own host while the authorization server
+     * issues at the apex, so `api.` is dropped and `api-<env>.` becomes `<env>.`;
+     * any other base URL is where OAuth is asked.
+     */
+    public function testTheAuthorizationServerIsTheApexOfTheApiHost(): void
+    {
+        $cases = [
+            'https://api.internetdata.io' => 'https://internetdata.io',
+            'https://api-staging.internetdata.io///' => 'https://staging.internetdata.io',
+            'HTTPS://API.Example.test' => 'HTTPS://Example.test',
+            'http://api.example.test:8080/v' => 'http://example.test:8080/v',
+            'https://internetdata.io' => 'https://internetdata.io',
+            'https://apis.example.test' => 'https://apis.example.test',
+            'https://api-.example.test' => 'https://api-.example.test',
+            'http://127.0.0.1:8080' => 'http://127.0.0.1:8080',
+        ];
+        foreach ($cases as $base => $issuer) {
+            $stub = new OauthStub([['status' => 200, 'body' => self::EVERY_REQUIRED_MEMBER]]);
+            $client = new Client(new Options(baseUrl: $base, httpClient: $stub->client));
+            $client->oauth->metadata();
+            // Guzzle lowercases the scheme and host it sends.
+            $metadata = (string) new Uri("{$issuer}/.well-known/oauth-authorization-server");
+            self::assertSame($metadata, $stub->requests[0]['url'], $base);
+            $url = $client->oauth->authorizationUrl('internetdata-cli', 'http://127.0.0.1/cb', 'x');
+            self::assertStringStartsWith("{$issuer}/oauth/authorize?", $url, $base);
         }
     }
 

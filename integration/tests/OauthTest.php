@@ -25,16 +25,16 @@ final class OauthTest extends TestCase
     // Already public in the CLI's source, and the only client staging accepts.
     private const CLIENT_ID = 'internetdata-cli';
 
-    // The console's device page. The API is served at the apex here, so a page
-    // derived from the API host would be the landing page's, which a `/device`
-    // suffix check alone still passes.
+    // The console's device page. One derived from the issuer, the apex, would be
+    // the landing page's, which a `/device` suffix check alone still passes.
     private const DEVICE_PAGE = 'https://app-staging.internetdata.io/device';
 
     public function testTheMetadataNamesStagingAsItsIssuer(): void
     {
         $metadata = self::client()->oauth->metadata();
 
-        self::assertSame(Staging::BASE_URL, $metadata->issuer);
+        // Asked through the API host, answered by the apex's authorization server.
+        self::assertSame(Staging::ISSUER, $metadata->issuer);
         self::assertNotNull($metadata->deviceAuthorizationEndpoint);
         self::assertContains('S256', $metadata->codeChallengeMethodsSupported ?? []);
     }

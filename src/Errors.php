@@ -7,6 +7,7 @@ namespace InternetData;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
@@ -69,6 +70,18 @@ final class Errors
         return new InternetDataException(ErrorKind::ServerError, $message, $status);
     }
 
+    /**
+     * A per-entry failure inside a successful batch: the status the single lookup
+     * would have answered, and its message, with no headers at all - so a 429
+     * here is a spent allowance, which is the only kind the API puts in an entry.
+     */
+    public static function fromEntry(int $status, string $message): InternetDataException
+    {
+        return self::fromResponse(
+            new Response($status, [], json_encode(['error' => $message], JSON_THROW_ON_ERROR)),
+        );
+    }
+
     public static function coerce(mixed $reason): InternetDataException
     {
         if ($reason instanceof InternetDataException) {
@@ -96,17 +109,25 @@ final class Errors
         );
     }
 
-    // The API's refusals carry a machine-readable `rc`, which says WHICH refusal
-    // this is where the status only says what class it belongs to. An
-    // intermediary in front of the API can also answer with an HTML page
-    // carrying no envelope at all.
+    // The two APIs behind this host answer with different envelopes: the lookups
+    // use `error`, the database endpoints a machine-readable `rc`, which says
+    // WHICH refusal this is where the status only says what class it belongs
+    // to. Both are read here so a caller never has to know which one they hit.
+    // An intermediary can also answer with an HTML page carrying no envelope at
+    // all.
     private static function messageOf(string $body): ?string
     {
         $decoded = json_decode($body, true);
-        if (!is_array($decoded) || !isset($decoded['rc']) || !is_string($decoded['rc'])) {
+        if (!is_array($decoded)) {
             return null;
         }
-        return $decoded['rc'];
+        // An empty `error` says nothing, and must not hide an `rc` beside it.
+        foreach (['error', 'rc'] as $key) {
+            if (isset($decoded[$key]) && is_string($decoded[$key]) && $decoded[$key] !== '') {
+                return $decoded[$key];
+            }
+        }
+        return null;
     }
 
     private static function parseRetryAfter(string $value): ?int

@@ -5,23 +5,50 @@ declare(strict_types=1);
 namespace InternetData;
 
 use Composer\InstalledVersions;
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\Each;
+use GuzzleHttp\Promise\PromiseInterface;
 use InternetData\Internal\Api\DatabaseV2Api;
+use InternetData\Internal\Api\EntitlementApi as WireEntitlementApi;
+use InternetData\Internal\Api\LookupApi;
 use InternetData\Internal\Configuration;
+use InternetData\Internal\Model\AsnLookupResponse;
+use InternetData\Internal\Model\BatchLookupRequest;
+use InternetData\Internal\Model\DomainLookupResponse;
+use InternetData\Internal\Model\Entitlement as WireEntitlement;
+use InternetData\Internal\Model\LookupResponse;
 use OutOfBoundsException;
+use Psr\Http\Message\ResponseInterface;
+use TypeError;
+use ValueError;
 
 /**
  * A client for the InternetData API.
  *
- * Access is granted by contract, one database family at a time, so every
- * database published today needs a key carrying the `db.download` scope. The key
- * is optional nonetheless, and a client built without one sends no
- * `Authorization` header at all: what this API serves without a license is a
- * product decision, not the client's to refuse. `$oauth` needs no key at all.
+ * The key is optional, and a client built without one sends no `Authorization`
+ * header at all: a lookup is then on Unlimited, the free plan. A database
+ * download needs a key carrying the `db.download` scope, and `$oauth` needs no
+ * key at all.
+ *
+ * The cache is per instance, so an answer is never shared between two clients
+ * holding different API keys and therefore entitled to different fields. A
+ * PSR-16 store given as `cacheStore` is shared, and keys its entries by the API
+ * key as well.
  */
 final class Client
 {
-    public const DEFAULT_BASE_URL = 'https://internetdata.io';
+    public const DEFAULT_BASE_URL = 'https://api.internetdata.io';
+
+    /** The most addresses POST /batch takes in one call; a larger batch is sent in chunks of this size. */
+    private const BATCH_MAX = 1000;
+
+    private readonly LookupApi $lookupApi;
+    private readonly WireEntitlementApi $entitlementApi;
+    private readonly Transport $transport;
+    private readonly ?AnswerCache $cache;
+    private readonly int $concurrency;
 
     /**
      * The database catalog and its downloads.
@@ -40,8 +67,12 @@ final class Client
 
     public function __construct(Options $options = new Options())
     {
+        // The spec gives the lookups a host of their own, which the generated
+        // request builders would use over this one: a client given any other base
+        // URL would look its addresses up in production.
         $config = (new Configuration())
             ->setHost(rtrim($options->baseUrl, '/'))
+            ->setIgnoreOperationHosts(true)
             ->setUserAgent(self::userAgent());
         // Set only when there is one: `Authorization: Bearer ` with nothing
         // after it reads as a wrong key rather than as no key, and a key of
@@ -53,9 +84,384 @@ final class Client
         }
 
         $http = $options->httpClient ?? new GuzzleClient();
-        $transport = new Transport($http, $options->retries, $options->timeout);
-        $this->database = new DatabaseApi(new DatabaseV2Api($http, $config), $transport);
-        $this->oauth = new OauthApi($transport, rtrim($options->baseUrl, '/'), self::userAgent());
+        $this->lookupApi = new LookupApi($http, $config);
+        $this->entitlementApi = new WireEntitlementApi($http, $config);
+        $this->transport = new Transport($http, $options->retries, $options->timeout);
+        $this->cache = match (true) {
+            !$options->cache => null,
+            $options->cacheStore !== null => new StoreCache(
+                $options->cacheStore,
+                $options->cacheTtlSeconds,
+                $apiKey . "\0" . rtrim($options->baseUrl, '/'),
+            ),
+            default => new Cache($options->cacheMaxSize, $options->cacheTtlSeconds),
+        };
+        $this->concurrency = $options->concurrency;
+        $this->database = new DatabaseApi(new DatabaseV2Api($http, $config), $this->transport);
+        $this->oauth = new OauthApi($this->transport, self::oauthBase($options->baseUrl), self::userAgent());
+    }
+
+    /**
+     * Whether an address is private, loopback, link-local, documentation,
+     * multicast or otherwise not routable, including the IPv6 equivalents and
+     * the 6to4 and Teredo ranges.
+     *
+     * These are the addresses `lookup` answers locally. Exposed here so the check
+     * is reachable from the client you already hold; `Bogon::isBogon` is the same
+     * function without one.
+     */
+    public function isBogon(string $ip): bool
+    {
+        return Bogon::isBogon($ip);
+    }
+
+    /**
+     * What every database says about one address.
+     *
+     * A bogon is answered locally and never reaches the network. Everything else
+     * is served, then cached for this instance.
+     *
+     * @param array{retries?: int, timeout?: float} $options Per-call overrides.
+     * @throws InternetDataException
+     */
+    public function lookup(string $ip, array $options = []): Result
+    {
+        CallOptions::assert($options, ['retries', 'timeout']);
+        return $this->lookupAsync($ip, $options)->wait();
+    }
+
+    /**
+     * What every database says about one AS, by its number.
+     *
+     * Sent as given and never cached: the API reads the number and refuses one it
+     * cannot as a `bad_request`.
+     *
+     * @param array{retries?: int, timeout?: float} $options Per-call overrides.
+     * @throws InternetDataException
+     */
+    public function lookupAsn(int $asn, array $options = []): AsnResult
+    {
+        CallOptions::assert($options, ['retries', 'timeout']);
+        $request = $this->lookupApi->lookupAsnRequest((string) $asn);
+        return $this->transport->sendAsync(
+            $request, $options['retries'] ?? null, CallOptions::timeout($options),
+            read: self::asnResult(...),
+        )->wait();
+    }
+
+    /**
+     * What every database says about one domain.
+     *
+     * Sent as given, escaped for the path, and never cached: the API normalizes
+     * the name and refuses one it cannot read as a `bad_request`.
+     *
+     * @param array{retries?: int, timeout?: float} $options Per-call overrides.
+     * @throws InternetDataException
+     */
+    public function lookupDomain(string $domain, array $options = []): DomainResult
+    {
+        CallOptions::assert($options, ['retries', 'timeout']);
+        $request = $this->lookupApi->lookupDomainRequest($domain);
+        return $this->transport->sendAsync(
+            $request, $options['retries'] ?? null, CallOptions::timeout($options),
+            read: self::domainResult(...),
+        )->wait();
+    }
+
+    /**
+     * What every database says about the address this client is calling from.
+     *
+     * The same answer `lookup` would give for that address, at the same cost
+     * against your allowance. The address is the one our edge observed, so a
+     * call made through a proxy or a VPN reports the exit it left through -
+     * usually the point of asking.
+     *
+     * Deliberately NOT cached. The cache is keyed by address, and which address
+     * this is IS the question: a machine that moves between networks would
+     * otherwise be told where it used to be.
+     *
+     * @param array{retries?: int, timeout?: float} $options Per-call overrides.
+     * @throws InternetDataException
+     */
+    public function myIp(array $options = []): Result
+    {
+        CallOptions::assert($options, ['retries', 'timeout']);
+        $request = $this->lookupApi->lookupMyIpRequest();
+        return $this->transport->sendAsync(
+            $request, $options['retries'] ?? null, CallOptions::timeout($options),
+            read: self::result(...),
+        )->wait();
+    }
+
+    /**
+     * What this client's key is entitled to, and how much of it has been used.
+     *
+     * Named for what it answers rather than `me`, which sits one letter from
+     * `myIp` and means something quite different: one is which address you are
+     * calling FROM, the other is what the key you are calling WITH may spend.
+     *
+     * Unlike a lookup there is no useful unauthenticated answer, so a client
+     * built without an API key gets an unauthorized error rather than a partial
+     * one.
+     *
+     * Usage counts against the ALLOWANCE WINDOW - on a paid plan the
+     * anniversary of the subscription, not the calendar month and not the
+     * billing period, and on the free plan the UTC day - and it is the same
+     * number a lookup is gated on. It can lag by a few seconds, because
+     * requests are counted in memory and flushed in aggregate.
+     *
+     * Deliberately NOT cached: the whole point is what has been spent, and a
+     * cached answer is a wrong one within seconds of the next request.
+     *
+     * @param array{retries?: int, timeout?: float} $options Per-call overrides.
+     * @throws InternetDataException
+     */
+    public function myEntitlement(array $options = []): Entitlement
+    {
+        CallOptions::assert($options, ['retries', 'timeout']);
+        $request = $this->entitlementApi->myEntitlementRequest();
+        return $this->transport->sendAsync(
+            $request, $options['retries'] ?? null, CallOptions::timeout($options),
+            read: static fn (ResponseInterface $r): Entitlement => Entitlement::fromWire(
+                Transport::toModel((string) $r->getBody(), WireEntitlement::class, $r->getStatusCode()),
+            ),
+        )->wait();
+    }
+
+    /**
+     * Look up many addresses in as few requests as possible.
+     *
+     * Bogons are answered locally and cached answers are reused; everything else
+     * goes to the batch endpoint in chunks of up to 1000 addresses, with at most
+     * `concurrency` chunks in flight. Keyed by address rather than positional, so
+     * duplicates in the input collapse to a single entry and the caller never has
+     * to line two lists up. An address that fails carries its error as its value,
+     * so one bad entry cannot lose the rest of the answers: the API reports a
+     * per-entry failure with the status the single lookup would have answered,
+     * and a chunk that fails as a whole marks every address in it. The batch
+     * endpoint needs a paid plan: without a key every address in a request of
+     * two or more carries an `Unauthorized` error, and a free-plan key's request
+     * of two or more a `BadRequest` (HTTP 402). A request of one address is
+     * answered as its lookup would be.
+     *
+     * @param iterable<string> $ips
+     * @param array{retries?: int, concurrency?: int, timeout?: float} $options Per-call overrides.
+     * @return array<string, Result|InternetDataException> Keyed by address, in input order.
+     */
+    public function lookupBatch(iterable $ips, array $options = []): array
+    {
+        CallOptions::assert($options, ['retries', 'concurrency', 'timeout']);
+        $concurrency = $options['concurrency'] ?? $this->concurrency;
+
+        $seen = [];
+        foreach ($ips as $ip) {
+            $seen[$ip] = true;
+        }
+        // An IPv4-mapped address is looked up as the IPv4 address it carries, once,
+        // and its answer keyed as the caller passed it.
+        $asked = array_map(strval(...), array_keys($seen));
+        $wire = array_map(Bogon::unmapped(...), $asked);
+        $unique = array_values(array_unique($wire));
+
+        $answers = [];
+        $routable = [];
+        foreach ($unique as $ip) {
+            if (Bogon::isBogon($ip)) {
+                $answers[$ip] = Bogon::result($ip);
+                continue;
+            }
+            $routable[] = $ip;
+        }
+        // One read for the whole batch, which a store across the network needs.
+        $hits = $this->cache?->getMany($routable) ?? [];
+        $pending = [];
+        foreach ($routable as $ip) {
+            if (isset($hits[$ip])) {
+                $answers[$ip] = $hits[$ip];
+                continue;
+            }
+            $pending[] = $ip;
+        }
+
+        // A generator, so only `concurrency` chunks are in flight at once: creating
+        // a promise starts its transfer, and an eagerly built list would put every
+        // chunk in flight regardless of the limit.
+        $chunks = (function () use ($pending, $options): iterable {
+            foreach (array_chunk($pending, self::BATCH_MAX) as $chunk) {
+                yield $this->lookupChunkAsync($chunk, $options);
+            }
+        })();
+        Each::ofLimit(
+            $chunks,
+            $concurrency,
+            function (array $value) use (&$answers): void {
+                foreach ($value as $ip => $answer) {
+                    $answers[$ip] = $answer;
+                }
+            },
+        )->wait();
+
+        // Reinstated in input order: the callbacks fire in completion order, and
+        // a caller iterating the result should see what they passed in.
+        $ordered = [];
+        foreach ($asked as $i => $ip) {
+            $ordered[$ip] = $answers[$wire[$i]];
+        }
+        return $ordered;
+    }
+
+    /**
+     * One POST /batch, mapped back onto the addresses it was asked about. A
+     * chunk-level failure - the call refused, the transport failing, an answer
+     * it cannot read, the retries exhausted - becomes every address's error,
+     * exactly as it would have been had each been looked up alone. Never
+     * rejects: the failure is the value.
+     *
+     * @param list<string> $chunk
+     * @param array{retries?: int, concurrency?: int, timeout?: float} $options
+     * @return PromiseInterface Resolving to array<string, Result|InternetDataException>.
+     */
+    private function lookupChunkAsync(array $chunk, array $options): PromiseInterface
+    {
+        $request = $this->lookupApi->lookupBatchRequest(new BatchLookupRequest(['ips' => $chunk]));
+        return $this->transport->sendAsync(
+            $request, $options['retries'] ?? null, CallOptions::timeout($options),
+            read: static fn (ResponseInterface $r): array => self::chunkAnswers($r, $chunk),
+        )->then(
+            function (array $answers): array {
+                $this->cache?->setMany(array_filter(
+                    $answers,
+                    static fn (Result|InternetDataException $answer): bool => $answer instanceof Result,
+                ));
+                return $answers;
+            },
+            function (mixed $reason) use ($chunk): array {
+                $error = Errors::coerce($reason);
+                $answers = [];
+                foreach ($chunk as $ip) {
+                    $answers[$ip] = $error;
+                }
+                return $answers;
+            },
+        );
+    }
+
+    /** @param array{retries?: int, timeout?: float} $options */
+    private function lookupAsync(string $ip, array $options): PromiseInterface
+    {
+        // Judged, sent and cached as the IPv4 address an IPv4-mapped one carries.
+        $ip = Bogon::unmapped($ip);
+        if (Bogon::isBogon($ip)) {
+            return Create::promiseFor(Bogon::result($ip));
+        }
+        $hit = $this->cache?->get($ip);
+        if ($hit !== null) {
+            return Create::promiseFor($hit);
+        }
+        $request = $this->lookupApi->lookupIpRequest($ip);
+        return $this->transport->sendAsync(
+            $request, $options['retries'] ?? null, CallOptions::timeout($options),
+            read: self::result(...),
+        )->then(
+            function (Result $result) use ($ip): Result {
+                $this->cache?->set($ip, $result);
+                return $result;
+            },
+        );
+    }
+
+    private static function result(ResponseInterface $response): Result
+    {
+        $body = (string) $response->getBody();
+        $status = $response->getStatusCode();
+        return Result::fromWire(
+            Transport::toModel($body, LookupResponse::class, $status),
+            Transport::toArray($body, $status),
+        );
+    }
+
+    private static function asnResult(ResponseInterface $response): AsnResult
+    {
+        $body = (string) $response->getBody();
+        $status = $response->getStatusCode();
+        return AsnResult::fromWire(
+            Transport::toModel($body, AsnLookupResponse::class, $status),
+            Transport::toArray($body, $status),
+        );
+    }
+
+    private static function domainResult(ResponseInterface $response): DomainResult
+    {
+        $body = (string) $response->getBody();
+        $status = $response->getStatusCode();
+        return DomainResult::fromWire(
+            Transport::toModel($body, DomainLookupResponse::class, $status),
+            Transport::toArray($body, $status),
+        );
+    }
+
+    /**
+     * A batch answer must carry both of its members: without them it is no answer
+     * for any address, and is retried like an outage. One entry that cannot be read
+     * is that address's error alone, as a per-entry failure from the API is.
+     *
+     * @param list<string> $chunk
+     * @return array<string, Result|InternetDataException>
+     */
+    private static function chunkAnswers(ResponseInterface $response, array $chunk): array
+    {
+        $status = $response->getStatusCode();
+        $text = (string) $response->getBody();
+        $body = Transport::toArray($text, $status);
+        $results = $body['results'] ?? null;
+        $errors = $body['errors'] ?? null;
+        if (!is_array($results) || !is_array($errors)) {
+            throw Errors::malformed('expected the results and errors of a batch', $status);
+        }
+        // Each entry is checked as decoded with objects, where `{}` is not `[]`.
+        $entries = (array) json_decode($text, false)->results;
+        $answers = [];
+        foreach ($chunk as $ip) {
+            if (array_key_exists($ip, $results)) {
+                $answers[$ip] = self::entryResult($entries[$ip], $results[$ip], $status);
+            } elseif (isset($errors[$ip]) && is_array($errors[$ip])) {
+                $answers[$ip] = Errors::fromEntry(
+                    (int) ($errors[$ip]['status'] ?? 500),
+                    (string) ($errors[$ip]['error'] ?? ''),
+                );
+            } else {
+                $answers[$ip] = new InternetDataException(
+                    ErrorKind::ServerError, "the batch answer did not include {$ip}", $status,
+                );
+            }
+        }
+        return $answers;
+    }
+
+    private static function entryResult(mixed $entry, mixed $raw, int $status): Result|InternetDataException
+    {
+        try {
+            return Result::fromWire(Transport::fromDecoded($entry, LookupResponse::class, $status), $raw);
+        } catch (InternetDataException $e) {
+            return $e;
+        } catch (Exception | TypeError | ValueError $e) {
+            return Errors::malformed($e->getMessage(), $status, $e);
+        }
+    }
+
+    /**
+     * Where the authorization server is: the apex, since the API's own host
+     * serves no OAuth. `api.` is dropped and `api-<env>.` becomes `<env>.`, so
+     * `https://api.internetdata.io` signs in at `https://internetdata.io`; any
+     * other base URL is used as given.
+     */
+    private static function oauthBase(string $baseUrl): string
+    {
+        return (string) preg_replace_callback(
+            '~^([a-z][a-z0-9+.-]*://)api(?:-([a-z0-9-]+))?\.~i',
+            static fn (array $m): string => $m[1] . (($m[2] ?? '') === '' ? '' : "{$m[2]}."),
+            rtrim($baseUrl, '/'),
+        );
     }
 
     private static function userAgent(): string

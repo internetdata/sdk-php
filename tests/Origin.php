@@ -12,7 +12,8 @@ use PHPUnit\Framework\Assert;
 use RuntimeException;
 
 /**
- * A real HTTP origin serving the download 302 and the object storage behind it.
+ * A real HTTP origin serving the download 302 and the object storage behind it,
+ * or an API call that stalls part way through its body.
  *
  * The download methods exist to answer what a transport does with a redirect and
  * with a body too large to hold, and a stubbed handler answers neither: with
@@ -93,7 +94,9 @@ final class Origin
     ): void
     {
         $origin = new Origin($body);
-        $client = new Client(new Options(baseUrl: $origin->baseUrl, retries: 0, timeout: $clientTimeout));
+        $client = new Client(
+            new Options(baseUrl: $origin->baseUrl, retries: 0, timeout: $clientTimeout, cache: false),
+        );
         $started = microtime(true);
         try {
             $answer = $call($client);

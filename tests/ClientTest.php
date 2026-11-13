@@ -574,6 +574,23 @@ final class ClientTest extends TestCase
             \InternetData\DatabaseMetadataColumn::class,
         ];
         yield 'Download' => [\InternetData\Internal\Model\Download::class, \InternetData\Download::class];
+        $lookups = [
+            'LookupResponse' => 'Result', 'AsnLookupResponse' => 'AsnResult', 'DomainLookupResponse' => 'DomainResult',
+            'ClassDetail' => 'ClassDetail', 'ProxyDetail' => 'ProxyDetail', 'PubproxyDetail' => 'PubproxyDetail',
+            'CarrierDetail' => 'CarrierDetail', 'SatelliteDetail' => 'SatelliteDetail', 'SshDetail' => 'SshDetail',
+            'SmtpDetail' => 'SmtpDetail', 'WebDetail' => 'WebDetail', 'DnsResolverDetail' => 'DnsResolverDetail',
+            'BitTorrentDetail' => 'BitTorrentDetail', 'Location' => 'Location', 'Asn' => 'Asn', 'Company' => 'Company',
+            'AbuseContact' => 'AbuseContact', 'Whois' => 'Whois', 'Rwhois' => 'Rwhois',
+            'HostedDomains' => 'HostedDomains', 'AsnPrefix' => 'AsnPrefix', 'DomainDns' => 'DomainDns',
+            'DnsAddressRecord' => 'DnsAddressRecord', 'DnsMxRecord' => 'DnsMxRecord', 'DnsNsRecord' => 'DnsNsRecord',
+            'DnsCnameRecord' => 'DnsCnameRecord', 'DomainIpRanges' => 'DomainIpRanges',
+            'DomainIpRange' => 'DomainIpRange', 'DisposableDetail' => 'DisposableDetail',
+            'Entitlement' => 'Entitlement', 'EntitlementApikey' => 'EntitlementApikey',
+            'EntitlementPlan' => 'EntitlementPlan', 'EntitlementUsage' => 'EntitlementUsage',
+        ];
+        foreach ($lookups as $wire => $ours) {
+            yield $ours => ["InternetData\\Internal\\Model\\{$wire}", "InternetData\\{$ours}"];
+        }
     }
 
     /**
