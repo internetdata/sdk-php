@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.10.0 - 2026-11-14
+
+### Features
+
+- Add the framework middleware core ([`2748464`](https://github.com/internetdata/sdk-php/commit/2748464189a1f54240961d076ec6b71779b8dd8f))
+
 ## 2.9.1 - 2026-11-13
 
 ### Fixes
