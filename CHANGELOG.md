@@ -2,6 +2,16 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.11.0 - 2026-11-15
+
+### Features
+
+- Read hosted_domains' 10 most popular domains ([`a400851`](https://github.com/internetdata/sdk-php/commit/a400851957a024c340a269a6d91cf5ea82d252de))
+
+### Fixes
+
+- Name the version in the User-Agent without the tag's v ([`78f6b7f`](https://github.com/internetdata/sdk-php/commit/78f6b7ff2ea65ab62b58a42e869322ca96839919))
+
 ## 2.10.1 - 2026-11-14
 
 ### Fixes
