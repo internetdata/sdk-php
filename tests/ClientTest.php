@@ -82,6 +82,17 @@ final class ClientTest extends TestCase
         self::assertStringContainsString('internetdata-php/', $stub->requests[0]->getHeaderLine('User-Agent'));
     }
 
+    // A release installs under its tag's name, so composer reports `v2.10.1`:
+    // through 2.10.1 the header read `internetdata-php/v2.10.1`.
+    public function testTheUserAgentNamesTheVersionWithoutTheTagsV(): void
+    {
+        $bare = new \ReflectionMethod(Client::class, 'bare');
+        $cases = ['v9.8.7' => '9.8.7', '9.8.7' => '9.8.7', 'dev-main' => 'dev-main', 'dev' => 'dev'];
+        foreach ($cases as $pretty => $want) {
+            self::assertSame($want, $bare->invoke(null, $pretty), $pretty);
+        }
+    }
+
     // The digests nest under `checksums`. Reading a top-level `sha256` returns
     // nothing against a perfectly healthy API, which is how nodejs 1.0.x shipped.
     public function testChecksumsAreUnwrappedFromTheirEnvelope(): void

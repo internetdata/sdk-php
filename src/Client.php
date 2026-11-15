@@ -485,16 +485,23 @@ final class Client
     }
 
     // Read from composer's own install metadata rather than a constant, which
-    // would be one more thing to remember to bump alongside the release tag.
+    // would be one more thing to remember to bump alongside the release tag. A
+    // release installs under its tag's name, `v2.10.1`, so the `v` is dropped
+    // to name the version as every other SDK does: through 2.10.1 it rode along.
     private static function version(): string
     {
         if (!class_exists(InstalledVersions::class)) {
             return 'dev';
         }
         try {
-            return InstalledVersions::getPrettyVersion('internetdata/internetdata') ?? 'dev';
+            return self::bare(InstalledVersions::getPrettyVersion('internetdata/internetdata') ?? 'dev');
         } catch (OutOfBoundsException) {
             return 'dev';
         }
+    }
+
+    private static function bare(string $version): string
+    {
+        return (string) preg_replace('/^v(?=\d)/', '', $version);
     }
 }
