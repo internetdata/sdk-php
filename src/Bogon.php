@@ -63,8 +63,8 @@ final class Bogon
      * The answer a bogon gets, in the full shape the API answers one on a paid
      * plan: every flag present and false, every detail object present and empty
      * (Web IP's list empty), the location, AS, company, abuse contact and both
-     * Whois records with every member empty or 0, no hostname and no hosted
-     * domains, and `isBogon` true.
+     * Whois records with every member empty or 0, no hostname, no hosted
+     * domains and an empty list of them, and `isBogon` true.
      *
      * Note this is deliberately the WIDEST shape regardless of your plan, so do
      * not infer which fields your plan includes from a bogon answer.
@@ -154,7 +154,7 @@ final class Bogon
                 asn: 0,
             ),
             rwhois: new Rwhois(id: '', name: '', country: '', source: '', domain: '', abuseEmail: ''),
-            hostedDomains: new HostedDomains(total: 0),
+            hostedDomains: new HostedDomains(total: 0, domains: []),
             raw: [],
         );
     }

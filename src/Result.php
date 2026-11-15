@@ -120,7 +120,7 @@ final class Result
         public readonly ?Whois $whois = null,
         /** IP RWHOIS's most specific network covering the address. Paid plans and the trial. */
         public readonly ?Rwhois $rwhois = null,
-        /** How many registered domains resolve to the address. Paid plans and the trial. */
+        /** How many registered domains resolve to the address, and the 10 most popular. Paid plans and the trial. */
         public readonly ?HostedDomains $hostedDomains = null,
         /**
          * On every answer to a key on the free plan, and on no other: `false` while the day's

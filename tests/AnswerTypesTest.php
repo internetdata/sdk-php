@@ -80,6 +80,9 @@ final class AnswerTypesTest extends TestCase
             ]]),
             'abuse.validated "yes"' => $lookup(['abuse' => ['email' => '', 'validated' => 'yes']]),
             'hosted_domains.total "4"' => $lookup(['hosted_domains' => ['total' => '4']]),
+            'hosted_domains.domains "x"' => $lookup(['hosted_domains' => ['total' => 1, 'domains' => 'x']]),
+            'hosted_domains.domains [1]' => $lookup(['hosted_domains' => ['total' => 1, 'domains' => [1]]]),
+            'hosted_domains.domains [null]' => $lookup(['hosted_domains' => ['total' => 1, 'domains' => [null]]]),
             'trial_expired 1' => $lookup(['trial_expired' => 1]),
         ];
     }
