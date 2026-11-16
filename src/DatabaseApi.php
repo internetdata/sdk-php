@@ -119,9 +119,9 @@ final class DatabaseApi
      *
      * The API answers `302` to object storage and the redirect is NOT followed
      * here, so what comes back is a link that authorizes itself and carries no
-     * credential of yours. Hand it to whatever should run the transfer: the link
-     * authorizes the START of one, so a download already running is not
-     * interrupted when it lapses.
+     * credential of yours. Hand it to whatever should run the transfer. The link
+     * only has to be valid when a transfer starts, so one already running isn't
+     * cut off when it lapses.
      *
      * `$build` names one build of the database, as a `database.updated`
      * webhook gives it (`20261105.0t53s5`), so the file is the one whose

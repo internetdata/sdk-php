@@ -38,7 +38,7 @@ final class LookupTest extends TestCase
             'expires' => null,
             'allowed_cidrs' => [],
         ],
-        'plan' => ['key' => 'max', 'tier' => 'max'],
+        'plan' => ['key' => 'max', 'name' => 'Max', 'tier' => 'max'],
         'usage' => [
             'requests' => 580,
             'quota' => 5000000,
@@ -176,7 +176,9 @@ final class LookupTest extends TestCase
         $asnPaid = [
             'type' => '', 'num_ips' => 0, 'num_prefixes4' => 0, 'num_prefixes6' => 0, 'rpki_valid' => 0,
             'rpki_invalid' => 0, 'rpki_not_found' => 0, 'whois' => new \stdClass(), 'prefixes' => [],
-            'trial_expired' => false,
+            'trial_expired' => false, 'rank' => 0, 'tier1' => false, 'num_upstreams' => 0, 'upstreams' => [],
+            'num_peers' => 0, 'peers' => [], 'num_downstreams' => 0, 'downstreams' => [],
+            'hosted_domains' => ['total' => 0, 'domains' => []],
         ];
         $stub = new Stub([
             '/asn/9009' => [Stub::ok(self::ASN_BODY + $asnPaid), Stub::ok(self::ASN_BODY)],
@@ -193,9 +195,14 @@ final class LookupTest extends TestCase
             $asn->type, $asn->numIps, $asn->numPrefixes4, $asn->numPrefixes6, $asn->rpkiValid,
             $asn->rpkiInvalid, $asn->rpkiNotFound, $asn->whois, $asn->prefixes, $asn->trialExpired,
         ]);
+        self::assertSame([0, false, 0, [], 0, [], 0, [], 0, []], [
+            $asn->rank, $asn->tier1, $asn->numUpstreams, $asn->upstreams, $asn->numPeers, $asn->peers,
+            $asn->numDownstreams, $asn->downstreams, $asn->hostedDomains?->total, $asn->hostedDomains?->domains,
+        ]);
         $bare = $client->lookupAsn(9009);
         foreach (['type', 'numIps', 'numPrefixes4', 'numPrefixes6', 'rpkiValid', 'rpkiInvalid', 'rpkiNotFound',
-            'whois', 'prefixes', 'trialExpired'] as $property) {
+            'whois', 'prefixes', 'trialExpired', 'rank', 'tier1', 'numUpstreams', 'upstreams', 'numPeers', 'peers',
+            'numDownstreams', 'downstreams', 'hostedDomains'] as $property) {
             self::assertNull($bare->{$property}, "AS {$property} left out must stay null");
         }
 
@@ -1013,6 +1020,7 @@ final class LookupTest extends TestCase
         self::assertInstanceOf(Entitlement::class, $ent);
         self::assertSame('max', $ent->plan->key);
         self::assertSame('max', $ent->plan->tier);
+        self::assertSame('Max', $ent->plan->name);
         self::assertSame(580, $ent->usage->requests);
         self::assertSame(5000000, $ent->usage->quota);
         // Null means NEVER stop, which is not the same as a limit of zero.

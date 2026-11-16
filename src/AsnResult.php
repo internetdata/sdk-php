@@ -65,6 +65,42 @@ final class AsnResult
          * @var array<string, mixed>
          */
         public readonly array $raw = [],
+        /**
+         * Its rank in ASN Extended by customer cone, 1 the largest; `0` for an AS seen in no AS
+         * path. Paid plans and the trial.
+         */
+        public readonly ?int $rank = null,
+        /**
+         * Whether it is one of the transit-free networks at the top of the hierarchy. Paid plans
+         * and the trial.
+         */
+        public readonly ?bool $tier1 = null,
+        /** How many AS numbers it gets transit from. Paid plans and the trial. */
+        public readonly ?int $numUpstreams = null,
+        /**
+         * Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+         *
+         * @var list<int>|null
+         */
+        public readonly ?array $upstreams = null,
+        /** How many AS numbers it exchanges its own and its customers' routes with. Paid plans and the trial. */
+        public readonly ?int $numPeers = null,
+        /**
+         * Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+         *
+         * @var list<int>|null
+         */
+        public readonly ?array $peers = null,
+        /** How many AS numbers it provides transit to. Paid plans and the trial. */
+        public readonly ?int $numDownstreams = null,
+        /**
+         * Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+         *
+         * @var list<int>|null
+         */
+        public readonly ?array $downstreams = null,
+        /** How many registered domains it hosts, and the 10 most popular. Paid plans and the trial. */
+        public readonly ?AsnHostedDomains $hostedDomains = null,
     ) {
     }
 
@@ -100,6 +136,17 @@ final class AsnResult
                 : array_map(AsnPrefix::fromWire(...), array_values($w->getPrefixes())),
             trialExpired: $w->getTrialExpired(),
             raw: $raw,
+            rank: $w->getRank(),
+            tier1: $w->getTier1(),
+            numUpstreams: $w->getNumUpstreams(),
+            upstreams: $w->getUpstreams() === null ? null : array_values($w->getUpstreams()),
+            numPeers: $w->getNumPeers(),
+            peers: $w->getPeers() === null ? null : array_values($w->getPeers()),
+            numDownstreams: $w->getNumDownstreams(),
+            downstreams: $w->getDownstreams() === null ? null : array_values($w->getDownstreams()),
+            hostedDomains: $w->getHostedDomains() === null
+                ? null
+                : AsnHostedDomains::fromWire($w->getHostedDomains()),
         );
     }
 }

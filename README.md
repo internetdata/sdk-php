@@ -76,6 +76,7 @@ Same answer `lookup` would give for that address, and the same cost against your
 ```php
 $acct = $client->myEntitlement();
 echo $acct->plan->key;          // the plan your organization is on
+echo $acct->plan->name;         // its name to show, "Unlimited" on free
 echo $acct->usage->requests;    // 580
 echo $acct->usage->windowEnd->format('c');   // when the allowance resets
 ```

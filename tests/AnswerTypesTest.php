@@ -23,7 +23,7 @@ final class AnswerTypesTest extends TestCase
     private const ENTITLEMENT = [
         'org_id' => '85bb51e4-2eb6-4a31-8e4d-02ba8b98fe61',
         'apikey' => ['id' => '0ab424cc-7619-4dad-b027-afacdc2cedb0', 'expires' => null, 'allowed_cidrs' => []],
-        'plan' => ['key' => 'max', 'tier' => 'max'],
+        'plan' => ['key' => 'max', 'name' => 'Max', 'tier' => 'max'],
         'usage' => [
             'requests' => 580,
             'quota' => 5000000,
@@ -108,6 +108,14 @@ final class AnswerTypesTest extends TestCase
             'AS: num_ips "5"' => ['/asn/9009', self::ASN + ['num_ips' => '5'], $asn],
             'AS: a whois value of 1' => ['/asn/9009', self::ASN + ['whois' => ['abuse' => 1]], $asn],
             'AS: whois as a list' => ['/asn/9009', self::ASN + ['whois' => ['x']], $asn],
+            'AS: rank "341"' => ['/asn/9009', self::ASN + ['rank' => '341'], $asn],
+            'AS: tier1 "false"' => ['/asn/9009', self::ASN + ['tier1' => 'false'], $asn],
+            'AS: upstreams ["174"]' => ['/asn/9009', self::ASN + ['upstreams' => ['174']], $asn],
+            'AS: downstreams [null]' => ['/asn/9009', self::ASN + ['downstreams' => [null]], $asn],
+            'AS: hosted_domains without total' => ['/asn/9009', self::ASN + ['hosted_domains' => ['domains' => []]], $asn],
+            'AS: hosted_domains.domains [1]' => [
+                '/asn/9009', self::ASN + ['hosted_domains' => ['total' => 1, 'domains' => [1]]], $asn,
+            ],
             'AS: a prefix without its size' => ['/asn/9009', self::ASN + ['prefixes' => [[
                 'prefix' => '146.70.116.0/24', 'peer_count' => 1, 'rpki_status' => 'valid',
                 'first_seen' => '2020-01-01', 'country' => 'AT', 'other_origins' => [],
@@ -138,6 +146,14 @@ final class AnswerTypesTest extends TestCase
             ],
             'entitlement: window_start ending in a newline' => [
                 '/api/v1/entitlement', $usage(['window_start' => "2026-09-04T07:00:00Z\n"]), $entitlement,
+            ],
+            'entitlement: a plan name of 1' => [
+                '/api/v1/entitlement', array_replace_recursive(self::ENTITLEMENT, ['plan' => ['name' => 1]]), $entitlement,
+            ],
+            'entitlement: a plan without its name' => [
+                '/api/v1/entitlement',
+                array_replace(self::ENTITLEMENT, ['plan' => ['key' => 'max', 'tier' => 'max']]),
+                $entitlement,
             ],
             'entitlement: a tier outside the spec' => [
                 '/api/v1/entitlement',

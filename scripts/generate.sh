@@ -43,7 +43,7 @@ SELECT="${SELECT}:DatabaseFormat:Standing"
 SELECT="${SELECT}:LookupResponse:ClassDetail:ProxyDetail:PubproxyDetail:CarrierDetail"
 SELECT="${SELECT}:SatelliteDetail:SshDetail:SmtpDetail:WebDetail:DnsResolverDetail:BitTorrentDetail"
 SELECT="${SELECT}:Location:Asn:Company:AbuseContact:Whois:Rwhois:HostedDomains"
-SELECT="${SELECT}:AsnLookupResponse:AsnPrefix"
+SELECT="${SELECT}:AsnLookupResponse:AsnPrefix:AsnHostedDomains"
 SELECT="${SELECT}:DomainLookupResponse:DomainDns:DnsAddressRecord:DnsMxRecord:DnsNsRecord"
 SELECT="${SELECT}:DnsCnameRecord:DomainIpRanges:DomainIpRange:DisposableDetail"
 # The batch, whose results the generator wraps in a oneOf of the three answers,
