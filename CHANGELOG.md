@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.12.0 - 2026-11-16
+
+### Features
+
+- Read an AS's rank, neighbors and hosted domains, and the plan's name ([`726928f`](https://github.com/internetdata/sdk-php/commit/726928f269fe774de40fdce0b09fededc5a21df1))
+
 ## 2.11.0 - 2026-11-15
 
 ### Features
