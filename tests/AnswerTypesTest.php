@@ -84,6 +84,7 @@ final class AnswerTypesTest extends TestCase
             'hosted_domains.domains [1]' => $lookup(['hosted_domains' => ['total' => 1, 'domains' => [1]]]),
             'hosted_domains.domains [null]' => $lookup(['hosted_domains' => ['total' => 1, 'domains' => [null]]]),
             'trial_expired 1' => $lookup(['trial_expired' => 1]),
+            'cap_reached "true"' => $lookup(['cap_reached' => 'true']),
         ];
     }
 
@@ -110,6 +111,8 @@ final class AnswerTypesTest extends TestCase
             'AS: whois as a list' => ['/asn/9009', self::ASN + ['whois' => ['x']], $asn],
             'AS: rank "341"' => ['/asn/9009', self::ASN + ['rank' => '341'], $asn],
             'AS: tier1 "false"' => ['/asn/9009', self::ASN + ['tier1' => 'false'], $asn],
+            'AS: cap_reached 1' => ['/asn/9009', self::ASN + ['cap_reached' => 1], $asn],
+            'domain: cap_reached "false"' => ['/domain/example.com', self::DOMAIN + ['cap_reached' => 'false'], $domain],
             'AS: upstreams ["174"]' => ['/asn/9009', self::ASN + ['upstreams' => ['174']], $asn],
             'AS: downstreams [null]' => ['/asn/9009', self::ASN + ['downstreams' => [null]], $asn],
             'AS: hosted_domains without total' => ['/asn/9009', self::ASN + ['hosted_domains' => ['domains' => []]], $asn],

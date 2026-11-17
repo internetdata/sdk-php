@@ -53,6 +53,12 @@ final class DomainResult
          * @var array<string, mixed>
          */
         public readonly array $raw = [],
+        /**
+         * On every answer to a key on a paid plan, and on no other: `false` while the answer has
+         * every field, `true` once its organization's overage cap is reached and the answer has
+         * Unlimited's. Lookups answered past the cap are not billed.
+         */
+        public readonly ?bool $capReached = null,
     ) {
     }
 
@@ -81,6 +87,7 @@ final class DomainResult
             ipRanges: $w->getIpRanges() === null ? null : DomainIpRanges::fromWire($w->getIpRanges()),
             disposable: $w->getDisposable() === null ? null : DisposableDetail::fromWire($w->getDisposable()),
             trialExpired: $w->getTrialExpired(),
+            capReached: $w->getCapReached(),
             raw: $raw,
         );
     }

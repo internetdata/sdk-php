@@ -101,6 +101,12 @@ final class AsnResult
         public readonly ?array $downstreams = null,
         /** How many registered domains it hosts, and the 10 most popular. Paid plans and the trial. */
         public readonly ?AsnHostedDomains $hostedDomains = null,
+        /**
+         * On every answer to a key on a paid plan, and on no other: `false` while the answer has
+         * every field, `true` once its organization's overage cap is reached and the answer has
+         * Unlimited's. Lookups answered past the cap are not billed.
+         */
+        public readonly ?bool $capReached = null,
     ) {
     }
 
@@ -135,6 +141,7 @@ final class AsnResult
                 ? null
                 : array_map(AsnPrefix::fromWire(...), array_values($w->getPrefixes())),
             trialExpired: $w->getTrialExpired(),
+            capReached: $w->getCapReached(),
             raw: $raw,
             rank: $w->getRank(),
             tier1: $w->getTier1(),

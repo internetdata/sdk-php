@@ -94,7 +94,7 @@ final class LookupTest extends TestCase
         $flags = [
             'is_vpn' => 'isVpn', 'is_resproxy' => 'isResproxy', 'is_dcproxy' => 'isDcproxy',
             'is_mobproxy' => 'isMobproxy', 'is_pubproxy' => 'isPubproxy', 'is_hosting' => 'isHosting',
-            'is_cdn' => 'isCdn', 'trial_expired' => 'trialExpired',
+            'is_cdn' => 'isCdn', 'trial_expired' => 'trialExpired', 'cap_reached' => 'capReached',
         ];
         $details = [
             'vpn' => 'vpn', 'resproxy' => 'resproxy', 'dcproxy' => 'dcproxy', 'mobproxy' => 'mobproxy',

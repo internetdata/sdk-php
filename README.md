@@ -176,7 +176,7 @@ try {
 
 `kind` is one of `bad_request`, `unauthorized`, `forbidden`, `rate_limited`, `quota_exceeded`, `server_error` or `network`. The message is the API's own, and a database call's is its result code, so a refusal says which refusal it was: `NOT_LICENSED` and `LICENSE_EXPIRED` are both a `forbidden`, and only one of them is fixed by renewing.
 
-Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit is when the API faces extreme traffic bursts and so retrying later works; but a spent quota needs your allowance raised or the window to roll over. The library retries rate limits for you, but not if your quota is exceeded. The database API has no quota, so you won't see `quota_exceeded` from it.
+Note that `rate_limited` and `quota_exceeded` both arrive as HTTP 429 and are not the same thing. A rate limit is when the API faces extreme traffic bursts and so retrying later works; but a 429 without `Retry-After` is `quota_exceeded`, which the library never retries. The API itself always sends `Retry-After` with a 429, so that one comes from something in between, such as a proxy; a paid key past its overage cap gets `capReached` instead. The database API has no quota, so you won't see `quota_exceeded` from it.
 
 ### Timeouts and retries
 
@@ -334,13 +334,14 @@ Each redirect URI must be https on a public host name, or http on a loopback add
 
 ### Absent is not false
 
-Unlimited leaves out the VPN, proxy, hosting and CDN flags, the detail behind each flag but Tor's and relay's, the city, both Whois records and the hosted domains; a free-plan key's answer carries `trialExpired`, true once its daily trial is spent. A field your key does not include is `null`, which is not the same answer as `false`: `null` means "not in your plan", `false` means "checked, and no".
+Unlimited leaves out the VPN, proxy, hosting and CDN flags, the detail behind each flag but Tor's and relay's, the city, both Whois records and the hosted domains; a free-plan key's answer carries `trialExpired`, true once its daily trial is spent. A paid key's carries `capReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A field your key does not include is `null`, which is not the same answer as `false`: `null` means "not in your plan", `false` means "checked, and no".
 
 ```php
 $result->isVpn ?? false;          // when you only want the flag
 $result->isVpn === null;          // on Unlimited: not in your plan
 $result->location->city;          // null on Unlimited, never ''
 $result->trialExpired === true;   // a free-plan key's daily trial is spent
+$result->capReached === true;     // a paid key is past its overage cap
 ```
 
 ## Other Libraries

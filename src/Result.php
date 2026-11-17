@@ -133,6 +133,12 @@ final class Result
          * @var array<string, mixed>
          */
         public readonly array $raw = [],
+        /**
+         * On every answer to a key on a paid plan, and on no other: `false` while the answer has
+         * every field, `true` once its organization's overage cap is reached and the answer has
+         * Unlimited's. Lookups answered past the cap are not billed.
+         */
+        public readonly ?bool $capReached = null,
     ) {
     }
 
@@ -199,6 +205,7 @@ final class Result
                 ? null
                 : HostedDomains::fromWire($w->getHostedDomains()),
             trialExpired: $w->getTrialExpired(),
+            capReached: $w->getCapReached(),
             raw: $raw,
         );
     }
