@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.13.0 - 2026-11-17
+
+### Features
+
+- Read cap_reached on a paid answer past its overage cap ([`1fceeac`](https://github.com/internetdata/sdk-php/commit/1fceeacf5b04195dfd60a00e1889be3c0d394f58))
+
 ## 2.12.0 - 2026-11-16
 
 ### Features
