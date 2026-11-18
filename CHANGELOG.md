@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.13.1 - 2026-11-18
+
+### Fixes
+
+- Re-pin the spec to 2026.11.17 as republished: KEY_OVER_HTTP on the account 403 ([`3b47b62`](https://github.com/internetdata/sdk-php/commit/3b47b62d1bf65ef248bda97e75ba96f40f51780f))
+
 ## 2.13.0 - 2026-11-17
 
 ### Features
