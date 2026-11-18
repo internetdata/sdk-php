@@ -133,7 +133,7 @@ The cache lives on the client instance, so how much it buys you depends on how l
 $client = new Client(new Options(apiKey: $key, cacheStore: $cache));
 ```
 
-Entries are keyed by a hash of your API key, the base URL and the address, so two keys never share an answer, and they live `cacheTtlSeconds`. The store's own eviction takes the place of `cacheMaxSize`, and a store that fails is a miss, never a failed lookup.
+Entries are keyed by a hash of your API key, the base URL and the address, so two keys never share an answer, and they live `cacheTtlSeconds`. The store's own eviction takes the place of `cacheMaxSize`, and a store that fails is a miss, never a failed lookup. `internetdata/symfony` and `internetdata/laravel` wire the framework's cache for you.
 
 ### Private and reserved addresses
 
