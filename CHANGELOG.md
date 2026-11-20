@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.14.0 - 2026-11-20
+
+### Features
+
+- Read a paid domain answer's hosting, co-hosted domains, home page, redirects and backlinks ([`aeb305d`](https://github.com/internetdata/sdk-php/commit/aeb305d75cab380f5238af576e10f0f0edcd8e43))
+- README: the paid domain answer's new members, and usage without a period ([`4cd5546`](https://github.com/internetdata/sdk-php/commit/4cd55461098ce99e313353cccea69c128354dcf6))
+
 ## 2.13.3 - 2026-11-20
 
 ### Fixes
