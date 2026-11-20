@@ -69,8 +69,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         'has_ns' => 'bool',
         'has_cname' => 'bool',
         'dns' => '\InternetData\Internal\Model\DomainDns',
+        'hosting' => '\InternetData\Internal\Model\DomainHost[]',
+        'cohosted_domains' => '\InternetData\Internal\Model\CohostedDomains',
         'ip_ranges' => '\InternetData\Internal\Model\DomainIpRanges',
         'disposable' => '\InternetData\Internal\Model\DisposableDetail',
+        'web' => '\InternetData\Internal\Model\DomainWeb',
+        'redirects' => '\InternetData\Internal\Model\DomainRedirects',
+        'backlinks' => '\InternetData\Internal\Model\DomainBacklinks',
         'trial_expired' => 'bool',
         'cap_reached' => 'bool'
     ];
@@ -90,8 +95,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         'has_ns' => null,
         'has_cname' => null,
         'dns' => null,
+        'hosting' => null,
+        'cohosted_domains' => null,
         'ip_ranges' => null,
         'disposable' => null,
+        'web' => null,
+        'redirects' => null,
+        'backlinks' => null,
         'trial_expired' => null,
         'cap_reached' => null
     ];
@@ -111,8 +121,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         'has_ns' => false,
         'has_cname' => false,
         'dns' => false,
+        'hosting' => false,
+        'cohosted_domains' => false,
         'ip_ranges' => false,
         'disposable' => false,
+        'web' => false,
+        'redirects' => false,
+        'backlinks' => false,
         'trial_expired' => false,
         'cap_reached' => false
     ];
@@ -202,8 +217,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         'has_ns' => 'has_ns',
         'has_cname' => 'has_cname',
         'dns' => 'dns',
+        'hosting' => 'hosting',
+        'cohosted_domains' => 'cohosted_domains',
         'ip_ranges' => 'ip_ranges',
         'disposable' => 'disposable',
+        'web' => 'web',
+        'redirects' => 'redirects',
+        'backlinks' => 'backlinks',
         'trial_expired' => 'trial_expired',
         'cap_reached' => 'cap_reached'
     ];
@@ -223,8 +243,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         'has_ns' => 'setHasNs',
         'has_cname' => 'setHasCname',
         'dns' => 'setDns',
+        'hosting' => 'setHosting',
+        'cohosted_domains' => 'setCohostedDomains',
         'ip_ranges' => 'setIpRanges',
         'disposable' => 'setDisposable',
+        'web' => 'setWeb',
+        'redirects' => 'setRedirects',
+        'backlinks' => 'setBacklinks',
         'trial_expired' => 'setTrialExpired',
         'cap_reached' => 'setCapReached'
     ];
@@ -244,8 +269,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         'has_ns' => 'getHasNs',
         'has_cname' => 'getHasCname',
         'dns' => 'getDns',
+        'hosting' => 'getHosting',
+        'cohosted_domains' => 'getCohostedDomains',
         'ip_ranges' => 'getIpRanges',
         'disposable' => 'getDisposable',
+        'web' => 'getWeb',
+        'redirects' => 'getRedirects',
+        'backlinks' => 'getBacklinks',
         'trial_expired' => 'getTrialExpired',
         'cap_reached' => 'getCapReached'
     ];
@@ -306,8 +336,13 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
         $this->setIfExists('has_ns', $data ?? [], null);
         $this->setIfExists('has_cname', $data ?? [], null);
         $this->setIfExists('dns', $data ?? [], null);
+        $this->setIfExists('hosting', $data ?? [], null);
+        $this->setIfExists('cohosted_domains', $data ?? [], null);
         $this->setIfExists('ip_ranges', $data ?? [], null);
         $this->setIfExists('disposable', $data ?? [], null);
+        $this->setIfExists('web', $data ?? [], null);
+        $this->setIfExists('redirects', $data ?? [], null);
+        $this->setIfExists('backlinks', $data ?? [], null);
         $this->setIfExists('trial_expired', $data ?? [], null);
         $this->setIfExists('cap_reached', $data ?? [], null);
     }
@@ -614,6 +649,60 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
     }
 
     /**
+     * Gets hosting
+     *
+     * @return \InternetData\Internal\Model\DomainHost[]|null
+     */
+    public function getHosting(): ?array
+    {
+        return $this->container['hosting'];
+    }
+
+    /**
+     * Sets hosting
+     *
+     * @param \InternetData\Internal\Model\DomainHost[]|null $hosting The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]` where it resolves to none. Paid plans and the trial.
+     *
+     * @return $this
+     */
+    public function setHosting(?array $hosting): static
+    {
+        if (is_null($hosting)) {
+            throw new InvalidArgumentException('non-nullable hosting cannot be null');
+        }
+        $this->container['hosting'] = $hosting;
+
+        return $this;
+    }
+
+    /**
+     * Gets cohosted_domains
+     *
+     * @return \InternetData\Internal\Model\CohostedDomains|null
+     */
+    public function getCohostedDomains(): ?\InternetData\Internal\Model\CohostedDomains
+    {
+        return $this->container['cohosted_domains'];
+    }
+
+    /**
+     * Sets cohosted_domains
+     *
+     * @param \InternetData\Internal\Model\CohostedDomains|null $cohosted_domains cohosted_domains
+     *
+     * @return $this
+     */
+    public function setCohostedDomains(?\InternetData\Internal\Model\CohostedDomains $cohosted_domains): static
+    {
+        if (is_null($cohosted_domains)) {
+            throw new InvalidArgumentException('non-nullable cohosted_domains cannot be null');
+        }
+        $this->container['cohosted_domains'] = $cohosted_domains;
+
+        return $this;
+    }
+
+    /**
      * Gets ip_ranges
      *
      * @return \InternetData\Internal\Model\DomainIpRanges|null
@@ -663,6 +752,87 @@ class DomainLookupResponse implements ModelInterface, ArrayAccess, JsonSerializa
             throw new InvalidArgumentException('non-nullable disposable cannot be null');
         }
         $this->container['disposable'] = $disposable;
+
+        return $this;
+    }
+
+    /**
+     * Gets web
+     *
+     * @return \InternetData\Internal\Model\DomainWeb|null
+     */
+    public function getWeb(): ?\InternetData\Internal\Model\DomainWeb
+    {
+        return $this->container['web'];
+    }
+
+    /**
+     * Sets web
+     *
+     * @param \InternetData\Internal\Model\DomainWeb|null $web web
+     *
+     * @return $this
+     */
+    public function setWeb(?\InternetData\Internal\Model\DomainWeb $web): static
+    {
+        if (is_null($web)) {
+            throw new InvalidArgumentException('non-nullable web cannot be null');
+        }
+        $this->container['web'] = $web;
+
+        return $this;
+    }
+
+    /**
+     * Gets redirects
+     *
+     * @return \InternetData\Internal\Model\DomainRedirects|null
+     */
+    public function getRedirects(): ?\InternetData\Internal\Model\DomainRedirects
+    {
+        return $this->container['redirects'];
+    }
+
+    /**
+     * Sets redirects
+     *
+     * @param \InternetData\Internal\Model\DomainRedirects|null $redirects redirects
+     *
+     * @return $this
+     */
+    public function setRedirects(?\InternetData\Internal\Model\DomainRedirects $redirects): static
+    {
+        if (is_null($redirects)) {
+            throw new InvalidArgumentException('non-nullable redirects cannot be null');
+        }
+        $this->container['redirects'] = $redirects;
+
+        return $this;
+    }
+
+    /**
+     * Gets backlinks
+     *
+     * @return \InternetData\Internal\Model\DomainBacklinks|null
+     */
+    public function getBacklinks(): ?\InternetData\Internal\Model\DomainBacklinks
+    {
+        return $this->container['backlinks'];
+    }
+
+    /**
+     * Sets backlinks
+     *
+     * @param \InternetData\Internal\Model\DomainBacklinks|null $backlinks backlinks
+     *
+     * @return $this
+     */
+    public function setBacklinks(?\InternetData\Internal\Model\DomainBacklinks $backlinks): static
+    {
+        if (is_null($backlinks)) {
+            throw new InvalidArgumentException('non-nullable backlinks cannot be null');
+        }
+        $this->container['backlinks'] = $backlinks;
 
         return $this;
     }

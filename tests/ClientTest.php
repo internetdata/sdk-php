@@ -596,6 +596,9 @@ final class ClientTest extends TestCase
             'DnsAddressRecord' => 'DnsAddressRecord', 'DnsMxRecord' => 'DnsMxRecord', 'DnsNsRecord' => 'DnsNsRecord',
             'DnsCnameRecord' => 'DnsCnameRecord', 'DomainIpRanges' => 'DomainIpRanges',
             'DomainIpRange' => 'DomainIpRange', 'DisposableDetail' => 'DisposableDetail',
+            'DomainHost' => 'DomainHost', 'CohostedDomains' => 'CohostedDomains', 'DomainWeb' => 'DomainWeb',
+            'DomainWebLinks' => 'DomainWebLinks', 'DomainRedirects' => 'DomainRedirects',
+            'DomainBacklinks' => 'DomainBacklinks',
             'Entitlement' => 'Entitlement', 'EntitlementApikey' => 'EntitlementApikey',
             'EntitlementPlan' => 'EntitlementPlan', 'EntitlementUsage' => 'EntitlementUsage',
         ];

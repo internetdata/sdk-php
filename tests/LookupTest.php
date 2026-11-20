@@ -211,9 +211,61 @@ final class LookupTest extends TestCase
         self::assertTrue($domain->disposable?->isEmpty());
         self::assertFalse($domain->trialExpired);
         $bare = $client->lookupDomain('example.com');
-        foreach (['isDisposable', 'disposable', 'dns', 'ipRanges', 'trialExpired'] as $property) {
+        foreach (['isDisposable', 'disposable', 'dns', 'ipRanges', 'trialExpired', 'hosting', 'cohostedDomains',
+            'web', 'redirects', 'backlinks'] as $property) {
             self::assertNull($bare->{$property}, "domain {$property} left out must stay null");
         }
+    }
+
+    // A paid domain answer's hosting, co-hosted domains, home page, redirects and
+    // backlinks come back whole, on their camelCase names.
+    public function testAPaidDomainAnswerCarriesItsHostingHomePageAndLinkingDomains(): void
+    {
+        $body = null;
+        $data = json_decode(
+            (string) file_get_contents(__DIR__ . '/../testdata/testdata.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        foreach ($data['lookup'] as $case) {
+            if ($case['name'] === 'domain-paid-answer') {
+                $body = $case['body'];
+            }
+        }
+        self::assertIsArray($body);
+        // Served as decoded with objects, where the empty `disposable` stays `{}`.
+        $served = null;
+        foreach (json_decode((string) file_get_contents(__DIR__ . '/../testdata/testdata.json'))->lookup as $case) {
+            if ($case->name === 'domain-paid-answer') {
+                $served = $case->body;
+            }
+        }
+        $stub = new Stub(['/domain/example.com' => Stub::ok($served)]);
+        $domain = (new Client(new Options(apiKey: 'k', httpClient: $stub->client)))->lookupDomain('example.com');
+
+        self::assertCount(count($body['hosting']), $domain->hosting ?? []);
+        self::assertSame($body['hosting'][1]['ip'], $domain->hosting[1]->ip ?? null);
+        self::assertSame($body['hosting'][1]['asn']['prefix'], $domain->hosting[1]->asn->prefix ?? null);
+        self::assertSame($body['hosting'][0]['asn']['asn'], $domain->hosting[0]->asn->asn ?? null);
+        self::assertSame(
+            [$body['cohosted_domains']['ip'], $body['cohosted_domains']['total'], $body['cohosted_domains']['domains']],
+            [$domain->cohostedDomains?->ip, $domain->cohostedDomains?->total, $domain->cohostedDomains?->domains],
+        );
+        self::assertSame(
+            [$body['web']['url'], $body['web']['title'], $body['web']['description'], $body['web']['last_seen'],
+                $body['web']['links']['total'], $body['web']['links']['hosts']],
+            [$domain->web?->url, $domain->web?->title, $domain->web?->description, $domain->web?->lastSeen,
+                $domain->web?->links->total, $domain->web?->links->hosts],
+        );
+        self::assertSame(
+            [$body['redirects']['total'], $body['redirects']['domains']],
+            [$domain->redirects?->total, $domain->redirects?->domains],
+        );
+        self::assertSame(
+            [$body['backlinks']['total'], $body['backlinks']['domains']],
+            [$domain->backlinks?->total, $domain->backlinks?->domains],
+        );
     }
 
     public function testBatchConcurrencyIsConfigurablePerCall(): void

@@ -46,6 +46,7 @@ SELECT="${SELECT}:Location:Asn:Company:AbuseContact:Whois:Rwhois:HostedDomains"
 SELECT="${SELECT}:AsnLookupResponse:AsnPrefix:AsnHostedDomains"
 SELECT="${SELECT}:DomainLookupResponse:DomainDns:DnsAddressRecord:DnsMxRecord:DnsNsRecord"
 SELECT="${SELECT}:DnsCnameRecord:DomainIpRanges:DomainIpRange:DisposableDetail"
+SELECT="${SELECT}:DomainHost:CohostedDomains:DomainWeb:DomainWebLinks:DomainRedirects:DomainBacklinks"
 # The batch, whose results the generator wraps in a oneOf of the three answers,
 # the lookup refusal, and the entitlement with its refusal. No mapping renames
 # that oneOf, so it is keyed by its placeholder and emitted as

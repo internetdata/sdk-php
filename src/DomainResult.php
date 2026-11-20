@@ -59,6 +59,21 @@ final class DomainResult
          * Unlimited's. Lookups answered past the cap are not billed.
          */
         public readonly ?bool $capReached = null,
+        /**
+         * The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]` where
+         * it resolves to none. Paid plans and the trial.
+         *
+         * @var list<DomainHost>|null
+         */
+        public readonly ?array $hosting = null,
+        /** The other registered domains on its first IPv4 address. Paid plans and the trial. */
+        public readonly ?CohostedDomains $cohostedDomains = null,
+        /** What our crawl last read of its home page. Paid plans and the trial. */
+        public readonly ?DomainWeb $web = null,
+        /** The registered domains whose home page redirects to it. Paid plans and the trial. */
+        public readonly ?DomainRedirects $redirects = null,
+        /** The registered domains whose home page links to it. Paid plans and the trial. */
+        public readonly ?DomainBacklinks $backlinks = null,
     ) {
     }
 
@@ -89,6 +104,12 @@ final class DomainResult
             trialExpired: $w->getTrialExpired(),
             capReached: $w->getCapReached(),
             raw: $raw,
+            hosting: $w->getHosting() === null ? null : array_map(DomainHost::fromWire(...), array_values($w->getHosting())),
+            cohostedDomains: $w->getCohostedDomains() === null
+                ? null : CohostedDomains::fromWire($w->getCohostedDomains()),
+            web: $w->getWeb() === null ? null : DomainWeb::fromWire($w->getWeb()),
+            redirects: $w->getRedirects() === null ? null : DomainRedirects::fromWire($w->getRedirects()),
+            backlinks: $w->getBacklinks() === null ? null : DomainBacklinks::fromWire($w->getBacklinks()),
         );
     }
 }

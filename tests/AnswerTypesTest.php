@@ -139,6 +139,49 @@ final class AnswerTypesTest extends TestCase
             'domain: disposable.providers "x"' => ['/domain/example.com', self::DOMAIN + ['disposable' => [
                 'confidence' => 'high', 'providers' => 'x', 'first_seen' => '', 'last_seen' => '',
             ]], $domain],
+            'domain: hosting as an object' => ['/domain/example.com', self::DOMAIN + ['hosting' => ['ip' => 'x']], $domain],
+            'domain: hosting [null]' => ['/domain/example.com', self::DOMAIN + ['hosting' => [null]], $domain],
+            'domain: a hosting entry without asn' => [
+                '/domain/example.com', self::DOMAIN + ['hosting' => [['ip' => '192.0.2.10']]], $domain,
+            ],
+            'domain: a hosting asn "64496"' => ['/domain/example.com', self::DOMAIN + ['hosting' => [[
+                'ip' => '192.0.2.10', 'asn' => ['asn' => '64496', 'name' => '', 'domain' => '', 'type' => '', 'prefix' => ''],
+            ]]], $domain],
+            'domain: a hosting asn without its prefix' => ['/domain/example.com', self::DOMAIN + ['hosting' => [[
+                'ip' => '192.0.2.10', 'asn' => ['asn' => 64496, 'name' => '', 'domain' => '', 'type' => ''],
+            ]]], $domain],
+            'domain: cohosted_domains.total "3"' => ['/domain/example.com', self::DOMAIN + ['cohosted_domains' => [
+                'ip' => '192.0.2.10', 'total' => '3', 'domains' => [],
+            ]], $domain],
+            'domain: cohosted_domains without its ip' => ['/domain/example.com', self::DOMAIN + ['cohosted_domains' => [
+                'total' => 3, 'domains' => [],
+            ]], $domain],
+            'domain: cohosted_domains.domains [1]' => ['/domain/example.com', self::DOMAIN + ['cohosted_domains' => [
+                'ip' => '192.0.2.10', 'total' => 1, 'domains' => [1],
+            ]], $domain],
+            'domain: web as a list' => ['/domain/example.com', self::DOMAIN + ['web' => []], $domain],
+            'domain: web without last_seen' => ['/domain/example.com', self::DOMAIN + ['web' => [
+                'url' => 'https://example.com/', 'title' => '', 'description' => '',
+                'links' => ['total' => 0, 'hosts' => []],
+            ]], $domain],
+            'domain: web.title null' => ['/domain/example.com', self::DOMAIN + ['web' => [
+                'url' => 'https://example.com/', 'title' => null, 'description' => '', 'last_seen' => '2026-11-18',
+                'links' => ['total' => 0, 'hosts' => []],
+            ]], $domain],
+            'domain: web.links.hosts [1]' => ['/domain/example.com', self::DOMAIN + ['web' => [
+                'url' => 'https://example.com/', 'title' => '', 'description' => '', 'last_seen' => '2026-11-18',
+                'links' => ['total' => 1, 'hosts' => [1]],
+            ]], $domain],
+            'domain: redirects.total 1.5' => [
+                '/domain/example.com', self::DOMAIN + ['redirects' => ['total' => 1.5, 'domains' => []]], $domain,
+            ],
+            'domain: redirects without its domains' => [
+                '/domain/example.com', self::DOMAIN + ['redirects' => ['total' => 0]], $domain,
+            ],
+            'domain: backlinks.domains [null]' => [
+                '/domain/example.com', self::DOMAIN + ['backlinks' => ['total' => 1, 'domains' => [null]]], $domain,
+            ],
+            'domain: backlinks "3"' => ['/domain/example.com', self::DOMAIN + ['backlinks' => '3'], $domain],
             'entitlement: requests "5"' => ['/api/v1/entitlement', $usage(['requests' => '5']), $entitlement],
             'entitlement: window_start "x"' => ['/api/v1/entitlement', $usage(['window_start' => 'x']), $entitlement],
             'entitlement: window_start at 24:00' => [
