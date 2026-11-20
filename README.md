@@ -32,7 +32,7 @@ echo $result->company->name;       // who uses the address
 
 ### With an API key
 
-Every paid plan answers every field: the VPN, proxy, hosting and CDN flags as well, the detail behind each flag, the city, both Whois records and how many domains an address hosts. The plans differ only in how many lookups they include, and a free account tries every field, 100 lookups a day. Create a key in the [console](https://app.internetdata.io), then pass it in:
+Every paid plan answers every field: the VPN, proxy, hosting and CDN flags as well, the detail behind each flag, the city, both Whois records and how many domains an address hosts. The plans differ only in how many lookups they include, and a free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
 
 ```php
 use InternetData\Client;
@@ -127,7 +127,7 @@ $client = new Client(new Options(cacheMaxSize: 50_000, cacheTtlSeconds: 6 * 60 *
 $clientNoCache = new Client(new Options(cache: false));
 ```
 
-An answer with `trialExpired` or `capReached` true is cached for a minute at most, in memory and in a `cacheStore`, so a new day's trial or a raised cap reaches you within a minute.
+An answer with `trialExpired` or `capReached` true is cached for a minute at most, in memory and in a `cacheStore`, so a renewed trial or a raised cap reaches you within a minute.
 
 The cache lives on the client instance, so how much it buys you depends on how long that instance lives. A worker, a queue consumer or a long-running server gets the full benefit. Under PHP-FPM or mod_php the client is built for every request, so give it a PSR-16 cache that outlives the request, such as your framework's:
 
@@ -336,13 +336,13 @@ Each redirect URI must be https on a public host name, or http on a loopback add
 
 ### Absent is not false
 
-Unlimited leaves out the VPN, proxy, hosting and CDN flags, the detail behind each flag but Tor's and relay's, the city, both Whois records and the hosted domains; a free-plan key's answer carries `trialExpired`, true once its daily trial is spent. A paid key's carries `capReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A field your key does not include is `null`, which is not the same answer as `false`: `null` means "not in your plan", `false` means "checked, and no".
+Unlimited leaves out the VPN, proxy, hosting and CDN flags, the detail behind each flag but Tor's and relay's, the city, both Whois records and the hosted domains; a free-plan key's answer carries `trialExpired`, true once its trial is spent. A paid key's carries `capReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A field your key does not include is `null`, which is not the same answer as `false`: `null` means "not in your plan", `false` means "checked, and no".
 
 ```php
 $result->isVpn ?? false;          // when you only want the flag
 $result->isVpn === null;          // on Unlimited: not in your plan
 $result->location->city;          // null on Unlimited, never ''
-$result->trialExpired === true;   // a free-plan key's daily trial is spent
+$result->trialExpired === true;   // a free-plan key's trial is spent
 $result->capReached === true;     // a paid key is past its overage cap
 ```
 
