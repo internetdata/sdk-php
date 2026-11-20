@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.13.3 - 2026-11-20
+
+### Fixes
+
+- Re-pin the spec to 2026.11.20: the trial without a count, and no per-minute limit ([`c5fc337`](https://github.com/internetdata/sdk-php/commit/c5fc33700a4096931a69f8531db2ffb85aa0f464))
+
 ## 2.13.2 - 2026-11-19
 
 ### Fixes
