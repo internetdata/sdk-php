@@ -56,7 +56,7 @@ final class LiveTest extends TestCase
 
         $result = $client->lookup('1.1.1.1');
 
-        // A free-plan key past its day's trial answers as Unlimited does, and says so.
+        // A free-plan key past its trial answers as Unlimited does, and says so.
         if ($result->trialExpired === true) {
             self::assertNull($result->isHosting);
             return;

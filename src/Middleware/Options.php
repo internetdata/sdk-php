@@ -11,8 +11,8 @@ use Psr\SimpleCache\CacheInterface;
  * How a middleware behaves.
  *
  * Everything is optional, though a server almost certainly wants an `apiKey`: without
- * one a lookup is on Unlimited, the free plan, and every lookup shares the per-minute
- * limit of the server's one address.
+ * one a lookup is on Unlimited, the free plan, and every lookup shares the rate limit
+ * of the server's one address.
  */
 final class Options
 {

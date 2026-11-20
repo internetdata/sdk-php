@@ -9,8 +9,8 @@ use InternetData\Internal\Model\Asn as WireAsn;
 /**
  * The network announcing the address, from IP ASN: `asn` is 0 where none does.
  *
- * A property only a paid plan or the trial answers is null on Unlimited, which means not in your
- * plan. The rest are set whenever the object is.
+ * A nullable property is null where the answer leaves it out. The rest are set whenever the
+ * object is.
  */
 final class Asn
 {
@@ -25,9 +25,9 @@ final class Asn
         public readonly string $type,
         /** The announced prefix covering the address. */
         public readonly string $prefix,
-        /** The country its registry assigned it to. Paid plans and the trial. */
+        /** The country its registry assigned it to. */
         public readonly ?string $country = null,
-        /** The announcement's RPKI status. Paid plans and the trial. */
+        /** The announcement's RPKI status. */
         public readonly ?string $rpkiStatus = null,
     ) {
     }

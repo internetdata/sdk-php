@@ -281,7 +281,7 @@ final class LookupTest extends TestCase
                 [
                     'status' => 429,
                     'headers' => ['Retry-After' => '2'],
-                    'body' => ['error' => 'per-minute limit for Unlimited lookups exceeded'],
+                    'body' => ['error' => 'rate limit for Unlimited lookups exceeded'],
                 ],
                 Stub::ok(Stub::answer('9.9.9.9', ['is_tor' => true])),
             ],
