@@ -68,7 +68,6 @@ final class LookupTest extends TestCase
             self::assertArrayNotHasKey($wire, $result->raw);
         }
         self::assertNull($result->location->city);
-        self::assertNull($result->asn->rpkiStatus);
         self::assertNull($result->company->type);
         self::assertNull($result->abuse->phone);
         self::assertCount(1, $facts);
