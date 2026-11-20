@@ -58,7 +58,10 @@ $domain = $client->lookupDomain('example.com');
 $domain->isRegistered;   // true
 $domain->hasMx;          // whether it has MX records
 $domain->dns->mx;        // the records themselves, on a paid plan
+$domain->web->title;     // its home page's title, on a paid plan
 ```
+
+A paid plan also adds the network behind each of its addresses (`hosting`), the other domains on its first IPv4 address (`cohostedDomains`), and the domains whose home pages redirect or link to it (`redirects`, `backlinks`).
 
 Unlike an address, an AS or a domain is never cached and has no batch. `lookup` takes an IP address alone, and refuses anything else as a `bad_request` before sending it.
 
@@ -81,7 +84,7 @@ echo $acct->usage->requests;    // 580
 echo $acct->usage->windowEnd->format('c');   // when the allowance resets
 ```
 
-Usage counts against the anniversary of your subscription on a paid plan, not the calendar month and not the billing period, and against the UTC day on the free plan; it is the same number a lookup is gated on. `hardLimit` is `null` on an uncapped plan, which is not the same as zero.
+Usage counts against the anniversary of your subscription on a paid plan, not the calendar month and not the billing period; it is the same number a lookup is gated on. `hardLimit` is `null` on an uncapped plan, which is not the same as zero.
 
 ### Batch lookup
 
