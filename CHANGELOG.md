@@ -2,6 +2,17 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.15.0 - 2026-11-22
+
+### Features
+
+- Read is_bot and the bot row, on spec 2026.11.21 ([`9aa2309`](https://github.com/internetdata/sdk-php/commit/9aa230997e2cb7b3a264f52919a24b813c13a650))
+- README: the bot flag on every plan, and whose bot it is on a paid plan ([`92a03c2`](https://github.com/internetdata/sdk-php/commit/92a03c20df2b03409f064cfb7fb21c0db1638807))
+
+### Fixes
+
+- Describe the free plan's trial as monthly in the doc comments ([`5f72c8c`](https://github.com/internetdata/sdk-php/commit/5f72c8c9e16ca2149e95cb52939c5ea4f5d3fed8))
+
 ## 2.14.0 - 2026-11-20
 
 ### Features
