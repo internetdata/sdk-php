@@ -43,8 +43,8 @@ final class DomainResult
         /** Disposable Domain's row, empty when `isDisposable` is false. Paid plans and the trial. */
         public readonly ?DisposableDetail $disposable = null,
         /**
-         * On every answer to a key on the free plan, and on no other: `false` while the day's
-         * trial of every field lasts, `true` once the answer has Unlimited's fields.
+         * On every answer to a key on the free plan, and on no other: `false` while the trial of
+         * every field lasts, `true` once the answer has Unlimited's fields.
          */
         public readonly ?bool $trialExpired = null,
         /**

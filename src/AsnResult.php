@@ -55,8 +55,8 @@ final class AsnResult
          */
         public readonly ?array $prefixes = null,
         /**
-         * On every answer to a key on the free plan, and on no other: `false` while the day's
-         * trial of every field lasts, `true` once the answer has Unlimited's fields.
+         * On every answer to a key on the free plan, and on no other: `false` while the trial of
+         * every field lasts, `true` once the answer has Unlimited's fields.
          */
         public readonly ?bool $trialExpired = null,
         /**

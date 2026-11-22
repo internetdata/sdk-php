@@ -77,7 +77,7 @@ final class Cache implements AnswerCache
 
     /**
      * How long an answer stays: the TTL, or at most a minute for one marked
-     * `trialExpired` or `capReached`, which a new UTC day or a raised cap ends.
+     * `trialExpired` or `capReached`, which a new month or a raised cap ends.
      * Still cached, so a busy process past its trial does not send every repeat
      * of an address to the API.
      */
