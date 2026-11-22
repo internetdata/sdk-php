@@ -17,7 +17,7 @@ Requires PHP 8.2 or newer. Everything is typed, and the fields a plan leaves out
 
 ## Usage
 
-**No API key needed to start.** Unlimited, the free plan, answers the Tor, relay, anycast, carrier, satellite and service flags, `location`, `asn`, `company`, `hostname` and the abuse email, with no daily or monthly cap, with a key or without one.
+**No API key needed to start.** Unlimited, the free plan, answers the Tor, relay, bot, anycast, carrier, satellite and service flags, `location`, `asn`, `company`, `hostname` and the abuse email, with no daily or monthly cap, with a key or without one.
 
 ```php
 use InternetData\Client;
@@ -44,6 +44,7 @@ $result = $client->lookup('146.70.116.130');
 $result->isVpn;                // true, on a paid plan
 $result->vpn->providerName;    // 'Mullvad', on a paid plan
 $result->location->city;       // 'Vienna', on a paid plan
+$result->bot->agents;          // ['Googlebot'] for a crawler's address, on a paid plan
 ```
 
 ### An AS or a domain
