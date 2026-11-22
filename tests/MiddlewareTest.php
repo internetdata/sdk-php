@@ -175,6 +175,24 @@ final class MiddlewareTest extends TestCase
         self::assertFalse($passing->evaluate(new Req())?->blocked);
     }
 
+    // `is_bot` is on every plan, so a condition on it is judged without a key, and the paid
+    // `bot` row reaches a condition by its members.
+    public function testABotConditionBlocksABotsAddressAndPassesAnother(): void
+    {
+        $bot = self::answer('paid-bot');
+        $core = fn (object $body, array $condition): Core => self::core(new MwOptions(
+            client: self::client(self::serving($body)),
+            blockCondition: $condition,
+            onMissingField: 'throw',
+        ));
+        $visitor = fn (object $body): Req => new Req(ip: $body->ip);
+
+        self::assertTrue($core($bot, ['isBot' => true])->evaluate($visitor($bot))?->blocked);
+        self::assertTrue($core($bot, ['bot' => ['verified' => true]])->evaluate($visitor($bot))?->blocked);
+        $unlimited = self::answer('unlimited-answer');
+        self::assertFalse($core($unlimited, ['isBot' => true])->evaluate($visitor($unlimited))?->blocked);
+    }
+
     public function testSkipClaimsTheRequest(): void
     {
         $stub = self::serving(self::answer('paid-full-shape'));

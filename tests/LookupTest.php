@@ -100,7 +100,7 @@ final class LookupTest extends TestCase
             'vpn' => 'vpn', 'resproxy' => 'resproxy', 'dcproxy' => 'dcproxy', 'mobproxy' => 'mobproxy',
             'pubproxy' => 'pubproxy', 'hosting' => 'hosting', 'cdn' => 'cdn', 'carrier' => 'carrier',
             'satellite' => 'satellite', 'ssh' => 'ssh', 'smtp' => 'smtp', 'dns_resolver' => 'dnsResolver',
-            'bittorrent' => 'bittorrent',
+            'bittorrent' => 'bittorrent', 'bot' => 'bot',
         ];
         $inner = [
             'location' => [
@@ -108,7 +108,6 @@ final class LookupTest extends TestCase
                 'longitude' => 0, 'accuracy_radius' => 0, 'geoname_id' => '', 'dma_code' => '',
                 'last_changed' => '',
             ],
-            'asn' => ['country' => '', 'rpki_status' => ''],
             'company' => ['type' => '', 'country' => ''],
             'abuse' => [
                 'name' => '', 'phone' => '', 'address' => '', 'country' => '', 'network' => '',
@@ -1037,6 +1036,45 @@ final class LookupTest extends TestCase
             }
         }
         self::assertSame([], $stub->calls);
+    }
+
+    // The corpus holds `bot` present and populated; this holds each of its members to the wire,
+    // the two lists in the order served.
+    public function testABotsAddressSaysWhoseBotItIsAndWhetherItIsVouchedFor(): void
+    {
+        $result = self::lookupOnce(Stub::answer('66.249.66.1', [
+            'is_bot' => true,
+            'bot' => [
+                'provider' => 'google',
+                'provider_name' => 'Google',
+                'agents' => ['Google-CloudVertexBot', 'GoogleOther', 'Googlebot'],
+                'categories' => ['ai_search', 'other', 'search_engine'],
+                'verified' => true,
+                'identity' => 'verified',
+                'verified_by' => 'list',
+                'confidence' => 'high',
+                'first_seen' => '2026-11-21',
+                'last_seen' => '2026-11-22',
+            ],
+        ]));
+
+        self::assertTrue($result->isBot);
+        self::assertNotNull($result->bot);
+        self::assertFalse($result->bot->isEmpty());
+        self::assertSame('google', $result->bot->provider);
+        self::assertSame('Google', $result->bot->providerName);
+        self::assertSame(['Google-CloudVertexBot', 'GoogleOther', 'Googlebot'], $result->bot->agents);
+        self::assertSame(['ai_search', 'other', 'search_engine'], $result->bot->categories);
+        self::assertTrue($result->bot->verified);
+        self::assertSame('verified', $result->bot->identity);
+        self::assertSame('list', $result->bot->verifiedBy);
+        self::assertSame('high', $result->bot->confidence);
+        self::assertSame('2026-11-21', $result->bot->firstSeen);
+        self::assertSame('2026-11-22', $result->bot->lastSeen);
+
+        $unlimited = self::lookupOnce(Stub::answer('66.249.66.2', ['is_bot' => true]));
+        self::assertTrue($unlimited->isBot, 'is_bot is on every plan');
+        self::assertNull($unlimited->bot, 'bot left out must stay null, not empty');
     }
 
     public function testMyIpAnswersForTheCallingAddress(): void

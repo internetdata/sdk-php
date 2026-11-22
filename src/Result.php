@@ -123,8 +123,8 @@ final class Result
         /** How many registered domains resolve to the address, and the 10 most popular. Paid plans and the trial. */
         public readonly ?HostedDomains $hostedDomains = null,
         /**
-         * On every answer to a key on the free plan, and on no other: `false` while the day's
-         * trial of every field lasts, `true` once the answer has Unlimited's fields.
+         * On every answer to a key on the free plan, and on no other: `false` while the trial of
+         * every field lasts, `true` once the answer has Unlimited's fields.
          */
         public readonly ?bool $trialExpired = null,
         /**
@@ -139,6 +139,18 @@ final class Result
          * Unlimited's. Lookups answered past the cap are not billed.
          */
         public readonly ?bool $capReached = null,
+        /**
+         * In Bot IP: an automated client's address, such as a search engine's or an AI company's
+         * crawler, an uptime monitor, an internet scanner or a webhook sender. On every plan.
+         */
+        public readonly bool $isBot = false,
+        /** Bot IP's row, empty when `isBot` is false. Paid plans and the trial. */
+        public readonly ?BotDetail $bot = null,
+        /**
+         * The agent a `User-Agent` sent with the lookup names, and whether the address bears it
+         * out. Only on an answer to a lookup that sent one, with every field.
+         */
+        public readonly ?UserAgentVerdict $userAgent = null,
     ) {
     }
 
@@ -207,6 +219,9 @@ final class Result
             trialExpired: $w->getTrialExpired(),
             capReached: $w->getCapReached(),
             raw: $raw,
+            isBot: $w->getIsBot(),
+            bot: $w->getBot() === null ? null : BotDetail::fromWire($w->getBot()),
+            userAgent: $w->getUserAgent() === null ? null : UserAgentVerdict::fromWire($w->getUserAgent()),
         );
     }
 }

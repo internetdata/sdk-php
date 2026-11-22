@@ -156,6 +156,8 @@ final class Bogon
             rwhois: new Rwhois(id: '', name: '', country: '', source: '', domain: '', abuseEmail: ''),
             hostedDomains: new HostedDomains(total: 0, domains: []),
             raw: [],
+            isBot: false,
+            bot: new BotDetail(),
         );
     }
 
