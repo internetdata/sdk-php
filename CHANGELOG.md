@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.15.1 - 2026-11-23
+
+### Fixes
+
+- Re-pin the spec to 2026.11.22: whose bot an unverified address names ([`2e65fbb`](https://github.com/internetdata/sdk-php/commit/2e65fbba7303764f6eebf24119e41f11df933647))
+
 ## 2.15.0 - 2026-11-22
 
 ### Features
