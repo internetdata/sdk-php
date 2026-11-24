@@ -18,7 +18,9 @@ use InternetData\Result;
  *     ['isVpn' => true, 'vpn' => ['provider' => 'nordvpn']]
  *
  * A value may be a scalar (equality, strings without regard to case), a LIST meaning
- * any-of, a map of `gte`/`gt`/`lte`/`lt` bounding a number, or a nested condition. A
+ * any-of, a map of `gte`/`gt`/`lte`/`lt` bounding a number, or a nested condition. On a
+ * member the answer holds as a list (`web`, `pubproxy.protocols`, `bot.agents`) a value
+ * matches when any element does: `['web' => ['port' => 443]]`. A
  * member set to `false` or `null` is ignored entirely - a condition states the
  * positive signals you act on, so there is no way to write "block when this is false",
  * which would otherwise read as blocking everybody.
@@ -199,6 +201,16 @@ final class Condition
      */
     private static function matchesValue(mixed $want, mixed $got): bool
     {
+        // A member the answer holds as a list (`web`'s rows, `pubproxy.protocols`) matches
+        // when any one element does, so an object term must hold within a single row.
+        if (is_array($got)) {
+            foreach ($got as $element) {
+                if (self::matchesValue($want, $element)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         if (is_array($want)) {
             if (self::isBound($want)) {
                 return self::matchesBound($want, $got);
