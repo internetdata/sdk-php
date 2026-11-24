@@ -24,7 +24,7 @@ final class DnsAddressRecord
     {
         return new self(
             ip: $w->getIp(),
-            lastSeen: $w->getLastSeen(),
+            lastSeen: Dates::day($w->getLastSeen()),
         );
     }
 }

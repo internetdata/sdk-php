@@ -412,6 +412,67 @@ final class LookupTest extends TestCase
     }
 
     /**
+     * Every seen day is an RFC 3339 full-date on a day that exists (the spec's
+     * `format: date`, from 2026.11.23), handed back as the string served. One
+     * in any other form is the retried server_error a database date is; the
+     * home page's `last_seen`, empty before a crawl, stays a plain string.
+     */
+    public function testASeenDayThatIsNoFullDateIsARetriedServerError(): void
+    {
+        $address = self::corpusBody('paid-full-shape');
+        $address->web = self::corpusBody('paid-services')->web;
+        $address->is_resproxy = true;
+        $address->resproxy = (object) ['provider' => 'brightdata', 'first_seen' => '2026-06-01',
+            'last_seen' => '2026-11-12'];
+        $address->is_pubproxy = true;
+        $address->pubproxy = (object) ['entry' => true, 'last_seen' => '2026-11-12', 'last_usable' => ''];
+        $address->is_ssh = true;
+        $address->ssh = (object) ['port' => 22, 'first_seen' => '2026-10-01', 'last_seen' => '2026-11-20'];
+        $address->is_smtp = true;
+        $address->smtp = (object) ['port' => 25, 'first_seen' => '2026-10-02', 'last_seen' => '2026-11-21'];
+        $asn = self::corpusBody('asn-paid-answer');
+        $domain = self::corpusBody('domain-paid-answer');
+        $domain->dns->cname = [(object) ['target' => 'example.net', 'last_seen' => '2026-11-19']];
+        $domain->web->last_seen = '';
+        $domain->is_disposable = true;
+        $domain->disposable = (object) ['confidence' => 'high', 'first_seen' => '2026-01-31',
+            'last_seen' => '2026-11-18'];
+        $ip = $address->ip;
+        $calls = [
+            "/{$ip}" => [$address, static fn (Client $c): object => $c->lookup($ip)],
+            '/asn/9009' => [$asn, static fn (Client $c): object => $c->lookupAsn(9009)],
+            '/domain/example.com' => [$domain, static fn (Client $c): object => $c->lookupDomain('example.com')],
+        ];
+        $seen = 0;
+        foreach ($calls as $path => [$body, $call]) {
+            $stub = new Stub([$path => Stub::ok($body)]);
+            $read = $call(new Client(new Options(cache: false, httpClient: $stub->client)));
+            foreach (self::seenDays($body) as $at => $served) {
+                $seen++;
+                self::assertSame($served, self::at($read, $at), "{$path} {$at}: handed back as served");
+                foreach (['x', '2026-02-30', '2026-11-5', ' 2026-11-12', "2026-11-12\n", '2026-11-12T00:00:00Z',
+                    '20261112', '2026-W47-1', '+2026-11-12', "2026-11-1\u{0662}", ''] as $bad) {
+                    $wrong = self::with(json_decode((string) json_encode($body)), $at, $bad);
+                    $stub = new Stub([$path => Stub::ok($wrong)]);
+                    $client = new Client(new Options(cache: false, retries: 2, httpClient: $stub->client));
+                    try {
+                        $call($client);
+                        self::fail("{$path} {$at} = " . json_encode($bad) . ': returned an answer');
+                    } catch (InternetDataException $e) {
+                        self::assertSame(ErrorKind::ServerError, $e->kind, "{$path} {$at}");
+                        self::assertSame(200, $e->status, "{$path} {$at}: the status");
+                    }
+                    self::assertCount(3, $stub->calls, "{$path} {$at}: retried like an outage");
+                }
+            }
+        }
+        // All 23 members the spec types a date, each at least once.
+        self::assertSame(28, $seen);
+        self::assertSame('', self::at($calls['/domain/example.com'][1](new Client(new Options(cache: false,
+            httpClient: (new Stub(['/domain/example.com' => Stub::ok($domain)]))->client))), 'web.last_seen'));
+    }
+
+    /**
      * A detail object is `{}` under a false flag, but one that is populated
      * carries every member its schema requires, and a shared object always does.
      */
@@ -1156,6 +1217,64 @@ final class LookupTest extends TestCase
     }
 
     /** @param array<string, mixed> $body */
+/** A corpus lookup case's body, decoded with objects as the API serves it. */
+    private static function corpusBody(string $name): object
+    {
+        $file = (string) file_get_contents(__DIR__ . '/../testdata/testdata.json');
+        foreach (json_decode($file, false, 512, JSON_THROW_ON_ERROR)->lookup as $case) {
+            if ($case->name === $name) {
+                return $case->body;
+            }
+        }
+        self::fail("no corpus lookup case {$name}");
+    }
+
+    /**
+     * Each non-empty `first_seen` and `last_seen` in a body by its wire path,
+     * leaving out the home page's, which the spec keeps a plain string.
+     *
+     * @return array<string, string>
+     */
+    private static function seenDays(mixed $value, string $at = ''): array
+    {
+        $found = [];
+        foreach ((array) $value as $key => $item) {
+            $path = $at === '' ? (string) $key : "{$at}.{$key}";
+            if (is_string($item) && in_array($key, ['first_seen', 'last_seen'], true) && $item !== ''
+                && !str_starts_with($path, 'web.last_seen')) {
+                $found[$path] = $item;
+            } elseif (is_object($item) || is_array($item)) {
+                $found += self::seenDays($item, $path);
+            }
+        }
+        return $found;
+    }
+
+    /** A copy of a decoded body with the member at a wire path replaced. */
+    private static function with(object $body, string $path, mixed $value): object
+    {
+        $keys = explode('.', $path);
+        $last = array_pop($keys);
+        $node = $body;
+        foreach ($keys as $key) {
+            $node = is_array($node) ? $node[(int) $key] : $node->{$key};
+        }
+        $node->{$last} = $value;
+        return $body;
+    }
+
+    /** What a read answer holds at a wire path, its members on their camelCase names. */
+    private static function at(object $read, string $path): mixed
+    {
+        $node = $read;
+        foreach (explode('.', $path) as $key) {
+            $node = is_array($node)
+                ? $node[(int) $key]
+                : $node->{lcfirst(str_replace('_', '', ucwords($key, '_')))};
+        }
+        return $node;
+    }
+
     private static function lookupOnce(array $body): Result
     {
         $stub = new Stub(Stub::lookups([$body['ip'] => Stub::ok($body)]));

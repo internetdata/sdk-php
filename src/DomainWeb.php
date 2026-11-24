@@ -18,7 +18,7 @@ final class DomainWeb
         public readonly string $title,
         /** An English page's description. */
         public readonly string $description,
-        /** The day it was last read. */
+        /** The day it was last read, empty when the crawl holds no page. */
         public readonly string $lastSeen,
         /** The external hosts the home page links to. */
         public readonly DomainWebLinks $links,

@@ -53,7 +53,7 @@ final class PubproxyDetail
             protocols: $w->getProtocols() === null ? null : array_values($w->getProtocols()),
             numPorts: $w->getNumPorts(),
             numProxies: $w->getNumProxies(),
-            lastSeen: $w->getLastSeen(),
+            lastSeen: Dates::day($w->getLastSeen()),
             lastUsable: $w->getLastUsable(),
         );
     }

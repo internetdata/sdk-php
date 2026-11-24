@@ -40,7 +40,7 @@ final class ClassDetail
             provider: $w->getProvider(),
             providerName: $w->getProviderName(),
             confidence: $w->getConfidence(),
-            lastSeen: $w->getLastSeen(),
+            lastSeen: Dates::day($w->getLastSeen()),
         );
     }
 }

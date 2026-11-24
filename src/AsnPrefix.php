@@ -40,7 +40,7 @@ final class AsnPrefix
             prefix: $w->getPrefix(),
             peerCount: $w->getPeerCount(),
             rpkiStatus: $w->getRpkiStatus(),
-            firstSeen: $w->getFirstSeen(),
+            firstSeen: Dates::day($w->getFirstSeen()),
             country: $w->getCountry(),
             size: $w->getSize(),
             otherOrigins: array_values($w->getOtherOrigins()),

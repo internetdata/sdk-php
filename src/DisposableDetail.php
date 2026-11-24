@@ -43,8 +43,8 @@ final class DisposableDetail
         return new self(
             confidence: $w->getConfidence(),
             providers: $w->getProviders() === null ? null : array_values($w->getProviders()),
-            firstSeen: $w->getFirstSeen(),
-            lastSeen: $w->getLastSeen(),
+            firstSeen: Dates::day($w->getFirstSeen()),
+            lastSeen: Dates::day($w->getLastSeen()),
         );
     }
 }

@@ -27,7 +27,7 @@ final class DnsMxRecord
         return new self(
             priority: $w->getPriority(),
             host: $w->getHost(),
-            lastSeen: $w->getLastSeen(),
+            lastSeen: Dates::day($w->getLastSeen()),
         );
     }
 }

@@ -24,7 +24,7 @@ final class DnsNsRecord
     {
         return new self(
             host: $w->getHost(),
-            lastSeen: $w->getLastSeen(),
+            lastSeen: Dates::day($w->getLastSeen()),
         );
     }
 }

@@ -47,8 +47,8 @@ final class ProxyDetail
         return new self(
             provider: $w->getProvider(),
             providerName: $w->getProviderName(),
-            firstSeen: $w->getFirstSeen(),
-            lastSeen: $w->getLastSeen(),
+            firstSeen: Dates::day($w->getFirstSeen()),
+            lastSeen: Dates::day($w->getLastSeen()),
             hits: $w->getHits(),
             hitsDaysPct: $w->getHitsDaysPct(),
             providersNum: $w->getProvidersNum(),

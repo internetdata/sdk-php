@@ -24,7 +24,7 @@ final class DnsCnameRecord
     {
         return new self(
             target: $w->getTarget(),
-            lastSeen: $w->getLastSeen(),
+            lastSeen: Dates::day($w->getLastSeen()),
         );
     }
 }
