@@ -2,6 +2,16 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.16.0 - 2026-11-24
+
+### Features
+
+- Match a block condition on a list member when any element matches ([`e82bc5c`](https://github.com/internetdata/sdk-php/commit/e82bc5c0b3a6a76d7dcebed302904342f487329b))
+
+### Fixes
+
+- Re-pin the spec to 2026.11.23: refuse a seen day that is no full-date ([`4f41522`](https://github.com/internetdata/sdk-php/commit/4f4152292a8cdc68713dcbf351625f6cef86d7ad))
+
 ## 2.15.1 - 2026-11-23
 
 ### Fixes
