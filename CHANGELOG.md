@@ -2,6 +2,17 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.17.0 - 2026-11-25
+
+### Features
+
+- Send a user agent with a lookup, and let a verified crawler through the middleware ([`26eff56`](https://github.com/internetdata/sdk-php/commit/26eff561dec124763c5e749c062ca7d789d95451))
+
+### Fixes
+
+- Re-pin the spec to 2026.11.25: a field is on a paid plan or the trial ([`3c6bdd7`](https://github.com/internetdata/sdk-php/commit/3c6bdd783df0803fc4f0b97993a39d87c188be01))
+- Docblocks: a field on a paid plan, as the spec says it now ([`1336bae`](https://github.com/internetdata/sdk-php/commit/1336baee5338e892c4cf89f6f558bc852b2645be))
+
 ## 2.16.0 - 2026-11-24
 
 ### Features
