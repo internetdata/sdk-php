@@ -42,8 +42,8 @@ final class AsnResult
         /** Its announcements with no RPKI record. On a paid plan or the trial. */
         public readonly ?int $rpkiNotFound = null,
         /**
-         * Its ASN Whois record, every column, empty where the registry states nothing. Paid plans
-         * and the trial.
+         * Its ASN Whois record, every column, empty where the registry states nothing. On a paid plan
+         * or the trial.
          *
          * @var array<string, string>|null
          */
@@ -71,8 +71,8 @@ final class AsnResult
          */
         public readonly ?int $rank = null,
         /**
-         * Whether it is one of the transit-free networks at the top of the hierarchy. Paid plans
-         * and the trial.
+         * Whether it is one of the transit-free networks at the top of the hierarchy. On a paid plan
+         * or the trial.
          */
         public readonly ?bool $tier1 = null,
         /** How many AS numbers it gets transit from. On a paid plan or the trial. */

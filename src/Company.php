@@ -20,7 +20,7 @@ final class Company
         /** Their domain. */
         public readonly string $domain,
         /**
-         * What kind of organization: hosting, isp, business, education, government. Paid plans and
+         * What kind of organization: hosting, isp, business, education, government. On a paid plan or
          * the trial.
          */
         public readonly ?string $type = null,

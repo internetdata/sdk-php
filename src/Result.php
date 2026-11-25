@@ -66,7 +66,7 @@ final class Result
         /** In VPN IP: a VPN service's server. On a paid plan or the trial. */
         public readonly ?bool $isVpn = null,
         /**
-         * In Residential Proxy IP's 90-day window: a residential proxy exit. Paid plans and the
+         * In Residential Proxy IP's 90-day window: a residential proxy exit. On a paid plan or the
          * trial.
          */
         public readonly ?bool $isResproxy = null,
@@ -75,8 +75,8 @@ final class Result
         /** In Mobile Proxy IP's 90-day window. On a paid plan or the trial. */
         public readonly ?bool $isMobproxy = null,
         /**
-         * In Public Proxy IP: a public proxy listens here, or its traffic left from here. Paid
-         * plans and the trial.
+         * In Public Proxy IP: a public proxy listens here, or its traffic left from here. On
+         * a paid plan or the trial.
          */
         public readonly ?bool $isPubproxy = null,
         /** In Hosting IP: a hosting or cloud network. On a paid plan or the trial. */
@@ -106,7 +106,7 @@ final class Result
         /** SMTP IP's row, empty when `isSmtp` is false. On a paid plan or the trial. */
         public readonly ?SmtpDetail $smtp = null,
         /**
-         * A row per port that answered, lowest first; `[]` when `isWeb` is false. Paid plans and
+         * A row per port that answered, lowest first; `[]` when `isWeb` is false. On a paid plan or
          * the trial.
          *
          * @var list<WebDetail>|null
