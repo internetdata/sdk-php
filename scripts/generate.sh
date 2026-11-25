@@ -98,6 +98,9 @@ rm -rf src/Internal
 mkdir -p src/Internal
 cp -R .gen/src/. src/Internal/
 
+# A value the API adds to an answer's enum reads as served (scripts/open_enums.py).
+python3 scripts/open_enums.py src/Internal/Model
+
 rm -rf .gen
 echo "regenerated src/Internal from spec/openapi.yaml"
 grep -m1 '^  version:' spec/openapi.yaml

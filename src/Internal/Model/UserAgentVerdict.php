@@ -294,14 +294,6 @@ class UserAgentVerdict implements ModelInterface, ArrayAccess, JsonSerializable
         if ($this->container['verdict'] === null) {
             $invalidProperties[] = "'verdict' can't be null";
         }
-        $allowedValues = self::getVerdictAllowableValues();
-        if (!is_null($this->container['verdict']) && !in_array($this->container['verdict'], $allowedValues, true)) {
-            $invalidProperties[] = sprintf(
-                "invalid value '%s' for 'verdict', must be one of '%s'",
-                $this->container['verdict'],
-                implode("', '", $allowedValues)
-            );
-        }
 
         return $invalidProperties;
     }
@@ -390,16 +382,6 @@ class UserAgentVerdict implements ModelInterface, ArrayAccess, JsonSerializable
     {
         if (is_null($verdict)) {
             throw new InvalidArgumentException('non-nullable verdict cannot be null');
-        }
-        $allowedValues = self::getVerdictAllowableValues();
-        if (!in_array($verdict, $allowedValues, true)) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    "Invalid value '%s' for 'verdict', must be one of '%s'",
-                    $verdict,
-                    implode("', '", $allowedValues)
-                )
-            );
         }
         $this->container['verdict'] = $verdict;
 
