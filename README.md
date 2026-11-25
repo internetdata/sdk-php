@@ -32,7 +32,7 @@ echo $result->company->name;       // who uses the address
 
 ### With an API key
 
-Every paid plan answers every field: the VPN, proxy, hosting and CDN flags as well, the detail behind each flag, the city, both Whois records and how many domains an address hosts. The plans differ only in how many lookups they include, and a free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
+A paid plan answers every field: the VPN, proxy, hosting and CDN flags as well, the detail behind each flag, the city, both Whois records and how many domains an address hosts. Its quotas differ only in how many lookups they include, and a free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
 
 ```php
 use InternetData\Client;
