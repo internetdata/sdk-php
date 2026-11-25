@@ -17,19 +17,19 @@ final class AbuseContact
     public function __construct(
         /** Where to report abuse from the address. */
         public readonly string $email,
-        /** The contact. Paid plans and the trial. */
+        /** The contact. On a paid plan or the trial. */
         public readonly ?string $name = null,
-        /** Its phone number. Paid plans and the trial. */
+        /** Its phone number. On a paid plan or the trial. */
         public readonly ?string $phone = null,
-        /** Its postal address. Paid plans and the trial. */
+        /** Its postal address. On a paid plan or the trial. */
         public readonly ?string $address = null,
-        /** ISO 3166 country code. Paid plans and the trial. */
+        /** ISO 3166 country code. On a paid plan or the trial. */
         public readonly ?string $country = null,
-        /** The registry block it was derived from. Paid plans and the trial. */
+        /** The registry block it was derived from. On a paid plan or the trial. */
         public readonly ?string $network = null,
-        /** ARIN reports the contact answered its yearly validation. Paid plans and the trial. */
+        /** ARIN reports the contact answered its yearly validation. On a paid plan or the trial. */
         public readonly ?bool $validated = null,
-        /** Since when it has not. Paid plans and the trial. */
+        /** Since when it has not. On a paid plan or the trial. */
         public readonly ?string $unvalidatedSince = null,
     ) {
     }

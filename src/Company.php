@@ -24,7 +24,7 @@ final class Company
          * the trial.
          */
         public readonly ?string $type = null,
-        /** ISO 3166 country code. Paid plans and the trial. */
+        /** ISO 3166 country code. On a paid plan or the trial. */
         public readonly ?string $country = null,
     ) {
     }

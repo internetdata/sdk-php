@@ -63,47 +63,47 @@ final class Result
         public readonly string $hostname,
         /** Where to report abuse from the address. */
         public readonly AbuseContact $abuse,
-        /** In VPN IP: a VPN service's server. Paid plans and the trial. */
+        /** In VPN IP: a VPN service's server. On a paid plan or the trial. */
         public readonly ?bool $isVpn = null,
         /**
          * In Residential Proxy IP's 90-day window: a residential proxy exit. Paid plans and the
          * trial.
          */
         public readonly ?bool $isResproxy = null,
-        /** In Datacenter Proxy IP's 90-day window. Paid plans and the trial. */
+        /** In Datacenter Proxy IP's 90-day window. On a paid plan or the trial. */
         public readonly ?bool $isDcproxy = null,
-        /** In Mobile Proxy IP's 90-day window. Paid plans and the trial. */
+        /** In Mobile Proxy IP's 90-day window. On a paid plan or the trial. */
         public readonly ?bool $isMobproxy = null,
         /**
          * In Public Proxy IP: a public proxy listens here, or its traffic left from here. Paid
          * plans and the trial.
          */
         public readonly ?bool $isPubproxy = null,
-        /** In Hosting IP: a hosting or cloud network. Paid plans and the trial. */
+        /** In Hosting IP: a hosting or cloud network. On a paid plan or the trial. */
         public readonly ?bool $isHosting = null,
-        /** In CDN IP: a content delivery network. Paid plans and the trial. */
+        /** In CDN IP: a content delivery network. On a paid plan or the trial. */
         public readonly ?bool $isCdn = null,
-        /** VPN IP's row, empty when `isVpn` is false. Paid plans and the trial. */
+        /** VPN IP's row, empty when `isVpn` is false. On a paid plan or the trial. */
         public readonly ?ClassDetail $vpn = null,
-        /** Residential Proxy IP's row, empty when `isResproxy` is false. Paid plans and the trial. */
+        /** Residential Proxy IP's row, empty when `isResproxy` is false. On a paid plan or the trial. */
         public readonly ?ProxyDetail $resproxy = null,
-        /** Datacenter Proxy IP's row, empty when `isDcproxy` is false. Paid plans and the trial. */
+        /** Datacenter Proxy IP's row, empty when `isDcproxy` is false. On a paid plan or the trial. */
         public readonly ?ProxyDetail $dcproxy = null,
-        /** Mobile Proxy IP's row, empty when `isMobproxy` is false. Paid plans and the trial. */
+        /** Mobile Proxy IP's row, empty when `isMobproxy` is false. On a paid plan or the trial. */
         public readonly ?ProxyDetail $mobproxy = null,
-        /** Public Proxy IP's row, empty when `isPubproxy` is false. Paid plans and the trial. */
+        /** Public Proxy IP's row, empty when `isPubproxy` is false. On a paid plan or the trial. */
         public readonly ?PubproxyDetail $pubproxy = null,
-        /** Hosting IP's row, empty when `isHosting` is false. Paid plans and the trial. */
+        /** Hosting IP's row, empty when `isHosting` is false. On a paid plan or the trial. */
         public readonly ?ClassDetail $hosting = null,
-        /** CDN IP's row, empty when `isCdn` is false. Paid plans and the trial. */
+        /** CDN IP's row, empty when `isCdn` is false. On a paid plan or the trial. */
         public readonly ?ClassDetail $cdn = null,
-        /** Carrier IP's row, empty when `isCarrier` is false. Paid plans and the trial. */
+        /** Carrier IP's row, empty when `isCarrier` is false. On a paid plan or the trial. */
         public readonly ?CarrierDetail $carrier = null,
-        /** Satellite IP's row, empty when `isSatellite` is false. Paid plans and the trial. */
+        /** Satellite IP's row, empty when `isSatellite` is false. On a paid plan or the trial. */
         public readonly ?SatelliteDetail $satellite = null,
-        /** SSH IP's row, empty when `isSsh` is false. Paid plans and the trial. */
+        /** SSH IP's row, empty when `isSsh` is false. On a paid plan or the trial. */
         public readonly ?SshDetail $ssh = null,
-        /** SMTP IP's row, empty when `isSmtp` is false. Paid plans and the trial. */
+        /** SMTP IP's row, empty when `isSmtp` is false. On a paid plan or the trial. */
         public readonly ?SmtpDetail $smtp = null,
         /**
          * A row per port that answered, lowest first; `[]` when `isWeb` is false. Paid plans and
@@ -112,15 +112,15 @@ final class Result
          * @var list<WebDetail>|null
          */
         public readonly ?array $web = null,
-        /** DNS Resolver IP's row, empty when `isDnsResolver` is false. Paid plans and the trial. */
+        /** DNS Resolver IP's row, empty when `isDnsResolver` is false. On a paid plan or the trial. */
         public readonly ?DnsResolverDetail $dnsResolver = null,
-        /** BitTorrent IP's row, empty when `isBittorrent` is false. Paid plans and the trial. */
+        /** BitTorrent IP's row, empty when `isBittorrent` is false. On a paid plan or the trial. */
         public readonly ?BitTorrentDetail $bittorrent = null,
-        /** IP Whois's most specific record covering the address. Paid plans and the trial. */
+        /** IP Whois's most specific record covering the address. On a paid plan or the trial. */
         public readonly ?Whois $whois = null,
-        /** IP RWHOIS's most specific network covering the address. Paid plans and the trial. */
+        /** IP RWHOIS's most specific network covering the address. On a paid plan or the trial. */
         public readonly ?Rwhois $rwhois = null,
-        /** How many registered domains resolve to the address, and the 10 most popular. Paid plans and the trial. */
+        /** How many registered domains resolve to the address, and the 10 most popular. On a paid plan or the trial. */
         public readonly ?HostedDomains $hostedDomains = null,
         /**
          * On every answer to a key on the free plan, and on no other: `false` while the trial of
@@ -144,7 +144,7 @@ final class Result
          * crawler, an uptime monitor, an internet scanner or a webhook sender. On every plan.
          */
         public readonly bool $isBot = false,
-        /** Bot IP's row, empty when `isBot` is false. Paid plans and the trial. */
+        /** Bot IP's row, empty when `isBot` is false. On a paid plan or the trial. */
         public readonly ?BotDetail $bot = null,
         /**
          * The agent a `User-Agent` sent with the lookup names, and whether the address bears it

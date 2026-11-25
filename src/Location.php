@@ -35,25 +35,25 @@ final class Location
         public readonly string $flagEmoji,
         /** The flag's code points, e.g. `U+1F1E6 U+1F1F9`. */
         public readonly string $flagUnicode,
-        /** Region (state or province). Paid plans and the trial. */
+        /** Region (state or province). On a paid plan or the trial. */
         public readonly ?string $region = null,
-        /** ISO 3166-2 region code. Paid plans and the trial. */
+        /** ISO 3166-2 region code. On a paid plan or the trial. */
         public readonly ?string $regionCode = null,
-        /** City. Paid plans and the trial. */
+        /** City. On a paid plan or the trial. */
         public readonly ?string $city = null,
-        /** Postal code. Paid plans and the trial. */
+        /** Postal code. On a paid plan or the trial. */
         public readonly ?string $postalCode = null,
-        /** Latitude of the city. Paid plans and the trial. */
+        /** Latitude of the city. On a paid plan or the trial. */
         public readonly ?float $latitude = null,
-        /** Longitude of the city. Paid plans and the trial. */
+        /** Longitude of the city. On a paid plan or the trial. */
         public readonly ?float $longitude = null,
-        /** Radius in km holding the true location with 67% confidence. Paid plans and the trial. */
+        /** Radius in km holding the true location with 67% confidence. On a paid plan or the trial. */
         public readonly ?int $accuracyRadius = null,
-        /** GeoNames ID of the city. Paid plans and the trial. */
+        /** GeoNames ID of the city. On a paid plan or the trial. */
         public readonly ?string $geonameId = null,
-        /** US TV market (DMA) code. Paid plans and the trial. */
+        /** US TV market (DMA) code. On a paid plan or the trial. */
         public readonly ?string $dmaCode = null,
-        /** The day the range's location last changed. Paid plans and the trial. */
+        /** The day the range's location last changed. On a paid plan or the trial. */
         public readonly ?string $lastChanged = null,
     ) {
     }

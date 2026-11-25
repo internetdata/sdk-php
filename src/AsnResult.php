@@ -27,19 +27,19 @@ final class AsnResult
         public readonly string $allocated,
         /** Its operator's domain. */
         public readonly string $domain,
-        /** The kind of network it runs. Paid plans and the trial. */
+        /** The kind of network it runs. On a paid plan or the trial. */
         public readonly ?string $type = null,
-        /** IPv4 addresses it announces. Paid plans and the trial. */
+        /** IPv4 addresses it announces. On a paid plan or the trial. */
         public readonly ?int $numIps = null,
-        /** IPv4 prefixes it announces. Paid plans and the trial. */
+        /** IPv4 prefixes it announces. On a paid plan or the trial. */
         public readonly ?int $numPrefixes4 = null,
-        /** IPv6 prefixes it announces. Paid plans and the trial. */
+        /** IPv6 prefixes it announces. On a paid plan or the trial. */
         public readonly ?int $numPrefixes6 = null,
-        /** Its announcements RPKI calls valid. Paid plans and the trial. */
+        /** Its announcements RPKI calls valid. On a paid plan or the trial. */
         public readonly ?int $rpkiValid = null,
-        /** Its announcements RPKI calls invalid. Paid plans and the trial. */
+        /** Its announcements RPKI calls invalid. On a paid plan or the trial. */
         public readonly ?int $rpkiInvalid = null,
-        /** Its announcements with no RPKI record. Paid plans and the trial. */
+        /** Its announcements with no RPKI record. On a paid plan or the trial. */
         public readonly ?int $rpkiNotFound = null,
         /**
          * Its ASN Whois record, every column, empty where the registry states nothing. Paid plans
@@ -49,7 +49,7 @@ final class AsnResult
          */
         public readonly ?array $whois = null,
         /**
-         * What it announces, IPv4 then IPv6, up to 20000 a family. Paid plans and the trial.
+         * What it announces, IPv4 then IPv6, up to 20000 a family. On a paid plan or the trial.
          *
          * @var list<AsnPrefix>|null
          */
@@ -67,7 +67,7 @@ final class AsnResult
         public readonly array $raw = [],
         /**
          * Its rank in ASN Extended by customer cone, 1 the largest; `0` for an AS seen in no AS
-         * path. Paid plans and the trial.
+         * path. On a paid plan or the trial.
          */
         public readonly ?int $rank = null,
         /**
@@ -75,31 +75,31 @@ final class AsnResult
          * and the trial.
          */
         public readonly ?bool $tier1 = null,
-        /** How many AS numbers it gets transit from. Paid plans and the trial. */
+        /** How many AS numbers it gets transit from. On a paid plan or the trial. */
         public readonly ?int $numUpstreams = null,
         /**
-         * Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+         * Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
          *
          * @var list<int>|null
          */
         public readonly ?array $upstreams = null,
-        /** How many AS numbers it exchanges its own and its customers' routes with. Paid plans and the trial. */
+        /** How many AS numbers it exchanges its own and its customers' routes with. On a paid plan or the trial. */
         public readonly ?int $numPeers = null,
         /**
-         * Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+         * Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
          *
          * @var list<int>|null
          */
         public readonly ?array $peers = null,
-        /** How many AS numbers it provides transit to. Paid plans and the trial. */
+        /** How many AS numbers it provides transit to. On a paid plan or the trial. */
         public readonly ?int $numDownstreams = null,
         /**
-         * Those AS numbers, ascending, up to 20000. Paid plans and the trial.
+         * Those AS numbers, ascending, up to 20000. On a paid plan or the trial.
          *
          * @var list<int>|null
          */
         public readonly ?array $downstreams = null,
-        /** How many registered domains it hosts, and the 10 most popular. Paid plans and the trial. */
+        /** How many registered domains it hosts, and the 10 most popular. On a paid plan or the trial. */
         public readonly ?AsnHostedDomains $hostedDomains = null,
         /**
          * On every answer to a key on a paid plan, and on no other: `false` while the answer has

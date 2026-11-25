@@ -34,13 +34,13 @@ final class DomainResult
         public readonly bool $hasNs,
         /** It has a CNAME record. */
         public readonly bool $hasCname,
-        /** In Disposable Domain. Paid plans and the trial. */
+        /** In Disposable Domain. On a paid plan or the trial. */
         public readonly ?bool $isDisposable = null,
-        /** Its records in Domain DNS, up to 100 of each type. Paid plans and the trial. */
+        /** Its records in Domain DNS, up to 100 of each type. On a paid plan or the trial. */
         public readonly ?DomainDns $dns = null,
-        /** Its organization's IP ranges, from Domain IP Ranges. Paid plans and the trial. */
+        /** Its organization's IP ranges, from Domain IP Ranges. On a paid plan or the trial. */
         public readonly ?DomainIpRanges $ipRanges = null,
-        /** Disposable Domain's row, empty when `isDisposable` is false. Paid plans and the trial. */
+        /** Disposable Domain's row, empty when `isDisposable` is false. On a paid plan or the trial. */
         public readonly ?DisposableDetail $disposable = null,
         /**
          * On every answer to a key on the free plan, and on no other: `false` while the trial of
@@ -61,18 +61,18 @@ final class DomainResult
         public readonly ?bool $capReached = null,
         /**
          * The network announcing each address in `dns.a` and then `dns.aaaa`, from IP ASN; `[]` where
-         * it resolves to none. Paid plans and the trial.
+         * it resolves to none. On a paid plan or the trial.
          *
          * @var list<DomainHost>|null
          */
         public readonly ?array $hosting = null,
-        /** The other registered domains on its first IPv4 address. Paid plans and the trial. */
+        /** The other registered domains on its first IPv4 address. On a paid plan or the trial. */
         public readonly ?CohostedDomains $cohostedDomains = null,
-        /** What our crawl last read of its home page. Paid plans and the trial. */
+        /** What our crawl last read of its home page. On a paid plan or the trial. */
         public readonly ?DomainWeb $web = null,
-        /** The registered domains whose home page redirects to it. Paid plans and the trial. */
+        /** The registered domains whose home page redirects to it. On a paid plan or the trial. */
         public readonly ?DomainRedirects $redirects = null,
-        /** The registered domains whose home page links to it. Paid plans and the trial. */
+        /** The registered domains whose home page links to it. On a paid plan or the trial. */
         public readonly ?DomainBacklinks $backlinks = null,
     ) {
     }
