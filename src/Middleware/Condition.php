@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace InternetData\Middleware;
 
+use InternetData\HeldFlags;
 use InternetData\Result;
 
 /**
@@ -58,7 +59,9 @@ final class Condition
      * there is one.
      *
      * A locally answered bogon needs no special case: it is synthesized in the widest
-     * shape, so every member is present and nothing reads as missing.
+     * shape, so every member is present and nothing reads as missing. The eight flags a
+     * `Result` holds at `false` are judged by the wire answer, so one Unlimited leaves out
+     * is reported though it reads `false`.
      *
      * @param array<mixed> $condition
      * @return list<string>
@@ -147,7 +150,7 @@ final class Condition
             }
             $path = $prefix . $member;
             $got = property_exists($value, (string) $member) ? $value->{$member} : null;
-            if ($got === null) {
+            if ($got === null || self::unserved($value, (string) $member, $prefix)) {
                 if (!in_array($path, $missing, true)) {
                     $missing[] = $path;
                 }
@@ -158,6 +161,20 @@ final class Condition
                 self::collectMissing($want, $got, "{$path}.", $missing);
             }
         }
+    }
+
+    /**
+     * Whether a top-level flag held at `bool` was left out of the answer the result was read
+     * from. A result with no wire answer behind it (`raw` empty: a bogon answered locally)
+     * carries every member, so none is unserved.
+     */
+    private static function unserved(object $value, string $member, string $prefix): bool
+    {
+        return $prefix === ''
+            && $value instanceof Result
+            && $value->raw !== []
+            && isset(HeldFlags::WIRE[$member])
+            && !array_key_exists(HeldFlags::WIRE[$member], $value->raw);
     }
 
     /**

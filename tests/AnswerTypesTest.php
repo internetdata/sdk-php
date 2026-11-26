@@ -33,6 +33,11 @@ final class AnswerTypesTest extends TestCase
         ],
     ];
 
+    /** The flags a lookup holds at a plain `bool`: absent reads false, a wrong type is refused. */
+    private const HELD_FLAGS = [
+        'is_bot', 'is_carrier', 'is_satellite', 'is_ssh', 'is_smtp', 'is_web', 'is_dns_resolver', 'is_bittorrent',
+    ];
+
     private const ASN = [
         'asn' => 9009,
         'name' => 'M247 Europe SRL',
@@ -56,7 +61,14 @@ final class AnswerTypesTest extends TestCase
     public static function lookupBodies(): array
     {
         $lookup = static fn (array $patch): array => [Stub::answer('9.9.9.9', $patch)];
+        $held = [];
+        foreach (self::HELD_FLAGS as $flag) {
+            $held["{$flag} \"false\""] = $lookup([$flag => 'false']);
+            $held["{$flag} 0"] = $lookup([$flag => 0]);
+            $held["{$flag} null"] = $lookup([$flag => null]);
+        }
         return [
+            ...$held,
             'is_tor "false"' => $lookup(['is_tor' => 'false']),
             'is_tor "yes"' => $lookup(['is_tor' => 'yes']),
             'is_tor 0' => $lookup(['is_tor' => 0]),
@@ -258,6 +270,66 @@ final class AnswerTypesTest extends TestCase
         self::assertSame(10, $client->lookupDomain('example.com')->dns?->mx[0]->priority);
         self::assertSame(580, $client->myEntitlement()->usage->requests);
         self::assertCount(4, $stub->calls, 'each sent once');
+    }
+
+    public function testAnAnswerWithoutTheHeldFlagsReadsThemFalseAndShowsThemAbsent(): void
+    {
+        $flags = array_map(
+            static fn (string $wire): string => lcfirst(str_replace('_', '', ucwords($wire, '_'))),
+            self::HELD_FLAGS,
+        );
+        $present = array_fill_keys(self::HELD_FLAGS, true);
+        $stub = new Stub([
+            '/9.9.9.1' => Stub::ok(Stub::answer('9.9.9.1')),
+            '/9.9.9.2' => Stub::ok(Stub::answer('9.9.9.2', $present)),
+            '/9.9.9.3' => Stub::ok(Stub::answer('9.9.9.3', array_fill_keys(self::HELD_FLAGS, false))),
+            '/batch' => Stub::ok([
+                'results' => [
+                    '9.9.9.4' => Stub::answer('9.9.9.4'),
+                    '9.9.9.5' => Stub::answer('9.9.9.5', $present),
+                ],
+                'errors' => new \stdClass(),
+            ]),
+        ]);
+        $client = new Client(new Options(cache: false, httpClient: $stub->client));
+
+        $none = [$client->lookup('9.9.9.1'), $client->lookupBatch(['9.9.9.4', '9.9.9.5'])['9.9.9.4']];
+        foreach ($none as $i => $result) {
+            self::assertInstanceOf(Result::class, $result, "answer {$i}");
+            foreach ($flags as $n => $flag) {
+                self::assertFalse($result->{$flag}, "answer {$i}: {$flag} reads false");
+                self::assertArrayNotHasKey(self::HELD_FLAGS[$n], $result->raw, "answer {$i}: {$flag}");
+            }
+        }
+        $served = [$client->lookup('9.9.9.2'), $client->lookupBatch(['9.9.9.4', '9.9.9.5'])['9.9.9.5']];
+        foreach ($served as $i => $result) {
+            self::assertInstanceOf(Result::class, $result, "served {$i}");
+            foreach ($flags as $n => $flag) {
+                self::assertTrue($result->{$flag}, "served {$i}: {$flag} reads as served");
+                self::assertTrue($result->raw[self::HELD_FLAGS[$n]], "served {$i}: {$flag}");
+            }
+        }
+        $falses = $client->lookup('9.9.9.3');
+        foreach (self::HELD_FLAGS as $wire) {
+            self::assertArrayHasKey($wire, $falses->raw, "{$wire} served false is present");
+        }
+    }
+
+    public function testAHeldFlagLeftOutOneAtATimeStillReads(): void
+    {
+        foreach (self::HELD_FLAGS as $wire) {
+            $body = array_diff_key(
+                Stub::answer('9.9.9.9', array_fill_keys(self::HELD_FLAGS, true)),
+                [$wire => 1],
+            );
+            $stub = new Stub(['/9.9.9.9' => Stub::ok($body)]);
+            $result = (new Client(new Options(cache: false, httpClient: $stub->client)))->lookup('9.9.9.9');
+
+            $name = lcfirst(str_replace('_', '', ucwords($wire, '_')));
+            self::assertFalse($result->{$name}, "{$wire} left out reads false");
+            self::assertArrayNotHasKey($wire, $result->raw, $wire);
+            self::assertCount(1, $stub->calls, "{$wire}: read at once, not retried");
+        }
     }
 
     public function testABatchEntryOfTheWrongTypeFailsThatAddressAlone(): void

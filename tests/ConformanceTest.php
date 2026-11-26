@@ -35,6 +35,16 @@ final class ConformanceTest extends TestCase
         'a-listing-is-never-reused-across-clients',
     ];
 
+    /**
+     * The flags a lookup holds at a plain `bool`, so one Unlimited leaves out reads false:
+     * held at their public type until the next major.
+     *
+     * @var list<string>
+     */
+    private const HELD_FLAGS = [
+        'is_bot', 'is_carrier', 'is_satellite', 'is_ssh', 'is_smtp', 'is_web', 'is_dns_resolver', 'is_bittorrent',
+    ];
+
     /** @var array<string, mixed> */
     private static array $data;
 
@@ -319,7 +329,8 @@ final class ConformanceTest extends TestCase
     /**
      * Absent is "not in your plan": a member the plan leaves out is null, never
      * false, zero or empty, inside a shared object too, while a detail served as
-     * `{}` (Web IP's `[]`) is present and empty.
+     * `{}` (Web IP's `[]`) is present and empty. The eight flags in HELD_FLAGS read
+     * false where they are absent, and the answer still shows them absent.
      */
     public function testEveryLookupKeepsAbsentApartFromFalseAndEmpty(): void
     {
@@ -351,6 +362,11 @@ final class ConformanceTest extends TestCase
                 self::assertSame(in_array($key, $expect['empty'], true), $empty, "{$name}: {$key} empty");
             }
             foreach ($expect['absent'] as $key) {
+                if (in_array($key, self::HELD_FLAGS, true)) {
+                    self::assertFalse($result->{self::camel($key)}, "{$name}: {$key} is held at bool, so reads false");
+                    self::assertArrayNotHasKey($key, $result->raw, "{$name}: {$key} must be absent from the answer");
+                    continue;
+                }
                 self::assertNull($result->{self::camel($key)}, "{$name}: {$key} must be ABSENT, not false or empty");
             }
             foreach ($expect['absentIn'] ?? [] as $object => $members) {

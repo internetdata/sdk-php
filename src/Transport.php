@@ -12,6 +12,7 @@ use GuzzleHttp\RequestOptions;
 use JsonException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use InternetData\Internal\Model\LookupResponse;
 use InternetData\Internal\Model\ModelInterface;
 use InternetData\Internal\ObjectSerializer;
 use TypeError;
@@ -191,7 +192,7 @@ final class Transport
         if (!$model instanceof $class) {
             throw Errors::malformed(sprintf('expected %s', $class), $status);
         }
-        $unmet = self::unmet($model, $class, '');
+        $unmet = self::unmet($model, $class, '') ?? self::nullHeldFlag($decoded, $class);
         if ($unmet !== null) {
             throw Errors::malformed(sprintf('the API answered %s', $unmet), $status);
         }
@@ -302,6 +303,23 @@ final class Transport
         return $format === 'date'
             || ((int) $m[4] < 24 && (int) $m[5] < 60 && (int) $m[6] < 60
                 && (int) ($m[7] ?? 0) < 24 && (int) ($m[8] ?? 0) < 60);
+    }
+
+    /**
+     * A held flag the answer serves as null, as an unmet requirement: the generated model
+     * reads a null member as absent, which it refused while the spec required the flag.
+     */
+    private static function nullHeldFlag(mixed $decoded, string $class): ?string
+    {
+        if ($class !== LookupResponse::class || !$decoded instanceof \stdClass) {
+            return null;
+        }
+        foreach (HeldFlags::WIRE as $wire) {
+            if (property_exists($decoded, $wire) && $decoded->{$wire} === null) {
+                return sprintf("an answer that breaks the spec ('%s' can't be null)", $wire);
+            }
+        }
+        return null;
     }
 
     /**

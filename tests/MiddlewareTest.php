@@ -175,7 +175,7 @@ final class MiddlewareTest extends TestCase
         self::assertFalse($passing->evaluate(new Req())?->blocked);
     }
 
-    // `is_bot` is on every plan, so a condition on it is judged without a key, and the paid
+    // A bot is a paid answer's: a condition on `isBot` is judged on a paid answer, and the
     // `bot` row reaches a condition by its members.
     public function testABotConditionBlocksABotsAddressAndPassesAnother(): void
     {
@@ -190,7 +190,46 @@ final class MiddlewareTest extends TestCase
         self::assertTrue($core($bot, ['isBot' => true])->evaluate($visitor($bot))?->blocked);
         self::assertTrue($core($bot, ['bot' => ['verified' => true]])->evaluate($visitor($bot))?->blocked);
         $unlimited = self::answer('unlimited-answer');
-        self::assertFalse($core($unlimited, ['isBot' => true])->evaluate($visitor($unlimited))?->blocked);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/isBot, which your plan does not include/');
+        $core($unlimited, ['isBot' => true])->evaluate($visitor($unlimited));
+    }
+
+    // Unlimited leaves out the eight flags `Result` holds at false, so a condition on one is a
+    // plan gap though it reads false; the same flag served false on a paid answer is no gap.
+    public function testAHeldFlagTheAnswerLeavesOutIsReportedAsAPlanGap(): void
+    {
+        $flags = [
+            'isBot', 'isCarrier', 'isSatellite', 'isSsh', 'isSmtp', 'isWeb', 'isDnsResolver', 'isBittorrent',
+        ];
+        $unlimited = self::answer('unlimited-answer');
+        $paid = self::answer('paid-full-shape');
+        foreach ($flags as $flag) {
+            $warnings = [];
+            $core = self::core(new MwOptions(
+                client: self::client(self::serving($unlimited)),
+                blockCondition: [$flag => true],
+                onWarn: function (string $m) use (&$warnings): void {
+                    $warnings[] = $m;
+                },
+            ));
+            $lookup = $core->evaluate(new Req(ip: $unlimited->ip));
+            self::assertFalse($lookup?->result?->{$flag}, "{$flag} reads false");
+            self::assertFalse($lookup->blocked, $flag);
+            self::assertCount(1, $warnings, $flag);
+            self::assertStringContainsString("blockCondition names {$flag},", $warnings[0]);
+
+            $warnings = [];
+            $core = self::core(new MwOptions(
+                client: self::client(self::serving($paid)),
+                blockCondition: [$flag => true],
+                onWarn: function (string $m) use (&$warnings): void {
+                    $warnings[] = $m;
+                },
+            ));
+            $core->evaluate(new Req(ip: $paid->ip));
+            self::assertSame([], $warnings, "{$flag} is served on a paid answer, even as false");
+        }
     }
 
     public function testSkipClaimsTheRequest(): void

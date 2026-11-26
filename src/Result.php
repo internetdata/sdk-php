@@ -13,6 +13,11 @@ use InternetData\Internal\Model\LookupResponse;
  * and `false` are genuinely different answers: null is "not in your plan", `false` is "checked,
  * and no". Write `$result->isVpn ?? false` when you only care whether the address is flagged.
  *
+ * Eight flags are a plain `bool` and never null: `isBot`, `isCarrier`, `isSatellite`, `isSsh`,
+ * `isSmtp`, `isWeb`, `isDnsResolver` and `isBittorrent`. Unlimited's answer leaves them out and
+ * they read `false`, so for these `false` can also mean "not in your plan":
+ * `array_key_exists('is_carrier', $result->raw)` tells the two apart.
+ *
  * A detail object that is present but empty (`isEmpty()`) means the flag above it is false. A
  * populated one always carries every one of its properties.
  */
@@ -32,19 +37,19 @@ final class Result
         public readonly bool $isRelay,
         /** In Anycast IP: announced from many places at once. */
         public readonly bool $isAnycast,
-        /** In Carrier IP: a mobile carrier's address space. */
+        /** In Carrier IP: a mobile carrier's address space. On a paid plan or the trial. */
         public readonly bool $isCarrier,
-        /** In Satellite IP: a satellite operator's address space. */
+        /** In Satellite IP: a satellite operator's address space. On a paid plan or the trial. */
         public readonly bool $isSatellite,
-        /** In SSH IP: an SSH server answered here. */
+        /** In SSH IP: an SSH server answered here. On a paid plan or the trial. */
         public readonly bool $isSsh,
-        /** In SMTP IP: a mail server answered here. */
+        /** In SMTP IP: a mail server answered here. On a paid plan or the trial. */
         public readonly bool $isSmtp,
-        /** In Web IP: a web server answered here on port 80 or 443. */
+        /** In Web IP: a web server answered here on port 80 or 443. On a paid plan or the trial. */
         public readonly bool $isWeb,
-        /** In DNS Resolver IP: an open DNS resolver answered here. */
+        /** In DNS Resolver IP: an open DNS resolver answered here. On a paid plan or the trial. */
         public readonly bool $isDnsResolver,
-        /** In BitTorrent IP: a BitTorrent client was seen here in the last 90 days. */
+        /** In BitTorrent IP: a BitTorrent client was seen here in the last 90 days. On a paid plan or the trial. */
         public readonly bool $isBittorrent,
         /** Tor IP's row, empty when `isTor` is false. */
         public readonly ClassDetail $tor,
@@ -141,7 +146,8 @@ final class Result
         public readonly ?bool $capReached = null,
         /**
          * In Bot IP: an automated client's address, such as a search engine's or an AI company's
-         * crawler, an uptime monitor, an internet scanner or a webhook sender. On every plan.
+         * crawler, an uptime monitor, an internet scanner or a webhook sender. On a paid plan or
+         * the trial.
          */
         public readonly bool $isBot = false,
         /** Bot IP's row, empty when `isBot` is false. On a paid plan or the trial. */
@@ -160,7 +166,8 @@ final class Result
      * The one place the wire's snake_case becomes idiomatic camelCase. The
      * generated model already distinguishes an ABSENT member from one that is
      * present and false, so every assignment here is a straight copy and a plan
-     * that includes a field and answers `false` keeps it.
+     * that includes a field and answers `false` keeps it. The eight flags
+     * above are held at `bool`, so an absent one reads `false` until the next major.
      *
      * @param array<string, mixed> $raw
      */
@@ -172,13 +179,13 @@ final class Result
             isTor: $w->getIsTor(),
             isRelay: $w->getIsRelay(),
             isAnycast: $w->getIsAnycast(),
-            isCarrier: $w->getIsCarrier(),
-            isSatellite: $w->getIsSatellite(),
-            isSsh: $w->getIsSsh(),
-            isSmtp: $w->getIsSmtp(),
-            isWeb: $w->getIsWeb(),
-            isDnsResolver: $w->getIsDnsResolver(),
-            isBittorrent: $w->getIsBittorrent(),
+            isCarrier: $w->getIsCarrier() ?? false,
+            isSatellite: $w->getIsSatellite() ?? false,
+            isSsh: $w->getIsSsh() ?? false,
+            isSmtp: $w->getIsSmtp() ?? false,
+            isWeb: $w->getIsWeb() ?? false,
+            isDnsResolver: $w->getIsDnsResolver() ?? false,
+            isBittorrent: $w->getIsBittorrent() ?? false,
             tor: ClassDetail::fromWire($w->getTor()),
             relay: ClassDetail::fromWire($w->getRelay()),
             location: Location::fromWire($w->getLocation()),
@@ -219,7 +226,7 @@ final class Result
             trialExpired: $w->getTrialExpired(),
             capReached: $w->getCapReached(),
             raw: $raw,
-            isBot: $w->getIsBot(),
+            isBot: $w->getIsBot() ?? false,
             bot: $w->getBot() === null ? null : BotDetail::fromWire($w->getBot()),
             userAgent: $w->getUserAgent() === null ? null : UserAgentVerdict::fromWire($w->getUserAgent()),
         );

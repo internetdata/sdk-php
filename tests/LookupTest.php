@@ -1134,7 +1134,7 @@ final class LookupTest extends TestCase
         self::assertSame('2026-11-22', $result->bot->lastSeen);
 
         $unlimited = self::lookupOnce(Stub::answer('66.249.66.2', ['is_bot' => true]));
-        self::assertTrue($unlimited->isBot, 'is_bot is on every plan');
+        self::assertTrue($unlimited->isBot, 'is_bot reads as served');
         self::assertNull($unlimited->bot, 'bot left out must stay null, not empty');
     }
 
