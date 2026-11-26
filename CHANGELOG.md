@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.18.0 - 2026-11-26
+
+### Fixes
+
+- Read a keyless answer without the bot, carrier, satellite and service flags ([`803b2dc`](https://github.com/internetdata/sdk-php/commit/803b2dc0ed3e344613112759e242ee5819212dbb))
+
 ## 2.17.0 - 2026-11-25
 
 ### Features
