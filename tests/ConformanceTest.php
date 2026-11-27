@@ -45,6 +45,14 @@ final class ConformanceTest extends TestCase
         'is_bot', 'is_carrier', 'is_satellite', 'is_ssh', 'is_smtp', 'is_web', 'is_dns_resolver', 'is_bittorrent',
     ];
 
+    /**
+     * The members of an object a lookup holds at a plain `string`, so one Unlimited leaves out
+     * reads `''`: held at their public type until the next major.
+     *
+     * @var array<string, list<string>>
+     */
+    private const HELD_IN = ['asn' => ['type']];
+
     /** @var array<string, mixed> */
     private static array $data;
 
@@ -330,7 +338,8 @@ final class ConformanceTest extends TestCase
      * Absent is "not in your plan": a member the plan leaves out is null, never
      * false, zero or empty, inside a shared object too, while a detail served as
      * `{}` (Web IP's `[]`) is present and empty. The eight flags in HELD_FLAGS read
-     * false where they are absent, and the answer still shows them absent.
+     * false and the members in HELD_IN `''` where they are absent, and the answer still shows
+     * them absent.
      */
     public function testEveryLookupKeepsAbsentApartFromFalseAndEmpty(): void
     {
@@ -371,6 +380,19 @@ final class ConformanceTest extends TestCase
             }
             foreach ($expect['absentIn'] ?? [] as $object => $members) {
                 foreach ($members as $member) {
+                    if (in_array($member, self::HELD_IN[$object] ?? [], true)) {
+                        self::assertSame(
+                            '',
+                            $result->{self::camel($object)}->{self::camel($member)},
+                            "{$name}: {$object}.{$member} is held at string, so reads ''",
+                        );
+                        self::assertArrayNotHasKey(
+                            $member,
+                            $result->raw[$object],
+                            "{$name}: {$object}.{$member} must be absent from the answer",
+                        );
+                        continue;
+                    }
                     self::assertNull(
                         $result->{self::camel($object)}->{self::camel($member)},
                         "{$name}: {$object}.{$member} must be ABSENT",

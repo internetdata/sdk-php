@@ -12,6 +12,7 @@ use GuzzleHttp\RequestOptions;
 use JsonException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use InternetData\Internal\Model\Asn as WireAsn;
 use InternetData\Internal\Model\LookupResponse;
 use InternetData\Internal\Model\ModelInterface;
 use InternetData\Internal\ObjectSerializer;
@@ -192,7 +193,7 @@ final class Transport
         if (!$model instanceof $class) {
             throw Errors::malformed(sprintf('expected %s', $class), $status);
         }
-        $unmet = self::unmet($model, $class, '') ?? self::nullHeldFlag($decoded, $class);
+        $unmet = self::unmet($model, $class, '') ?? self::nullHeldMember($decoded, $class);
         if ($unmet !== null) {
             throw Errors::malformed(sprintf('the API answered %s', $unmet), $status);
         }
@@ -306,17 +307,43 @@ final class Transport
     }
 
     /**
-     * A held flag the answer serves as null, as an unmet requirement: the generated model
-     * reads a null member as absent, which it refused while the spec required the flag.
+     * A member `HeldMembers` names that the answer serves as null, as an unmet requirement, at
+     * any depth: the generated model reads a null member as absent, which it refused while the
+     * spec required the member, and the spec lets an answer leave it out.
      */
-    private static function nullHeldFlag(mixed $decoded, string $class): ?string
+    private static function nullHeldMember(mixed $decoded, string $type, string $at = ''): ?string
     {
-        if ($class !== LookupResponse::class || !$decoded instanceof \stdClass) {
+        if (str_ends_with($type, '[]') && is_array($decoded)) {
+            foreach ($decoded as $i => $item) {
+                $held = self::nullHeldMember($item, substr($type, 0, -2), "{$at}[{$i}]");
+                if ($held !== null) {
+                    return $held;
+                }
+            }
             return null;
         }
-        foreach (HeldFlags::WIRE as $wire) {
-            if (property_exists($decoded, $wire) && $decoded->{$wire} === null) {
-                return sprintf("an answer that breaks the spec ('%s' can't be null)", $wire);
+        $type = ltrim($type, '\\');
+        if (!$decoded instanceof \stdClass || !is_subclass_of($type, ModelInterface::class)) {
+            return null;
+        }
+        $names = match ($type) {
+            LookupResponse::class => array_values(HeldMembers::FLAGS),
+            WireAsn::class => [HeldMembers::ASN],
+            default => [],
+        };
+        foreach ($names as $name) {
+            if (property_exists($decoded, $name) && $decoded->{$name} === null) {
+                return sprintf("%s that breaks the spec ('%s' can't be null)", $at === '' ? 'an answer' : $at, $name);
+            }
+        }
+        $wire = $type::attributeMap();
+        foreach ($type::openAPITypes() as $property => $memberType) {
+            $name = $wire[$property];
+            if (property_exists($decoded, $name)) {
+                $held = self::nullHeldMember($decoded->{$name}, $memberType, $at === '' ? $name : "{$at}.{$name}");
+                if ($held !== null) {
+                    return $held;
+                }
             }
         }
         return null;

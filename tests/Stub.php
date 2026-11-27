@@ -121,7 +121,6 @@ final class Stub
                 'asn' => 9009,
                 'name' => 'M247 Europe SRL',
                 'domain' => 'm247global.com',
-                'type' => 'hosting',
                 'prefix' => '146.70.116.0/24',
                 'country' => 'RO',
                 'rpki_status' => 'not_found',

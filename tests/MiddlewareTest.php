@@ -232,6 +232,42 @@ final class MiddlewareTest extends TestCase
         }
     }
 
+    // Unlimited leaves out the AS's `type`, which `Asn` holds at '': a condition on it is a plan
+    // gap and never matches, and the same condition on a paid answer that serves it is no gap.
+    public function testAnAsnTypeTheAnswerLeavesOutIsReportedAsAPlanGapAndNeverMatches(): void
+    {
+        $unlimited = self::answer('unlimited-answer');
+        $paid = self::answer('paid-full-shape');
+        $condition = ['asn' => ['type' => ['hosting', 'business']]];
+
+        $warnings = [];
+        $core = self::core(new MwOptions(
+            client: self::client(self::serving($unlimited)),
+            blockCondition: $condition,
+            onWarn: function (string $m) use (&$warnings): void {
+                $warnings[] = $m;
+            },
+        ));
+        $lookup = $core->evaluate(new Req(ip: $unlimited->ip));
+        self::assertSame('', $lookup?->result?->asn->type);
+        self::assertFalse($lookup->blocked);
+        self::assertCount(1, $warnings);
+        self::assertStringContainsString('blockCondition names asn.type,', $warnings[0]);
+
+        $warnings = [];
+        $core = self::core(new MwOptions(
+            client: self::client(self::serving($paid)),
+            blockCondition: $condition,
+            onWarn: function (string $m) use (&$warnings): void {
+                $warnings[] = $m;
+            },
+        ));
+        $lookup = $core->evaluate(new Req(ip: $paid->ip));
+        self::assertSame('hosting', $lookup?->result?->asn->type);
+        self::assertTrue($lookup->blocked);
+        self::assertSame([], $warnings);
+    }
+
     public function testSkipClaimsTheRequest(): void
     {
         $stub = self::serving(self::answer('paid-full-shape'));

@@ -32,7 +32,7 @@ echo $result->company->name;       // who uses the address
 
 ### With an API key
 
-A paid plan answers every field: the VPN, proxy, hosting, CDN, bot, carrier, satellite and service flags as well, the detail behind each flag, the city, both Whois records and how many domains an address hosts. Its quotas differ only in how many lookups they include, and a free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
+A paid plan answers every field: the VPN, proxy, hosting, CDN, bot, carrier, satellite and service flags as well, the detail behind each flag, the AS's type, the city, both Whois records and how many domains an address hosts. Its quotas differ only in how many lookups they include, and a free account tries every field. Create a key in the [console](https://app.internetdata.io), then pass it in:
 
 ```php
 use InternetData\Client;
@@ -358,12 +358,13 @@ Each redirect URI must be https on a public host name, or http on a loopback add
 
 ### Absent is not false
 
-Unlimited leaves out the VPN, proxy, hosting, CDN, bot, carrier, satellite and service flags, the detail behind each flag but Tor's and relay's, the city, both Whois records and the hosted domains; a free-plan key's answer carries `trialExpired`, true once its trial is spent. A paid key's carries `capReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A field your key does not include is `null`, which is not the same answer as `false`: `null` means "not in your plan", `false` means "checked, and no". The exception is eight flags typed as a plain `bool`, `isBot`, `isCarrier`, `isSatellite`, `isSsh`, `isSmtp`, `isWeb`, `isDnsResolver` and `isBittorrent`: an Unlimited answer leaves them out and they read `false`, so tell the two apart with `array_key_exists('is_carrier', $result->raw)`.
+Unlimited leaves out the VPN, proxy, hosting, CDN, bot, carrier, satellite and service flags, the detail behind each flag but Tor's and relay's, the AS's type, the city, both Whois records and the hosted domains; a free-plan key's answer carries `trialExpired`, true once its trial is spent. A paid key's carries `capReached`, true once its organization's overage cap is reached, when the answer has Unlimited's fields and isn't billed. A field your key does not include is `null`, which is not the same answer as `false`: `null` means "not in your plan", `false` means "checked, and no". The exceptions are eight flags typed as a plain `bool`, `isBot`, `isCarrier`, `isSatellite`, `isSsh`, `isSmtp`, `isWeb`, `isDnsResolver` and `isBittorrent`, and `asn->type`, a plain `string`: an Unlimited answer leaves them out and they read `false` and `''`, so tell the two apart with `array_key_exists('is_carrier', $result->raw)` and `array_key_exists('type', $result->raw['asn'])`.
 
 ```php
 $result->isVpn ?? false;          // when you only want the flag
 $result->isVpn === null;          // on Unlimited: not in your plan
 array_key_exists('is_carrier', $result->raw); // false on Unlimited, where isCarrier reads false
+array_key_exists('type', $result->raw['asn']); // false on Unlimited, where asn->type reads ''
 $result->location->city;          // null on Unlimited, never ''
 $result->trialExpired === true;   // a free-plan key's trial is spent
 $result->capReached === true;     // a paid key is past its overage cap

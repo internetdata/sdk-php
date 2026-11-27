@@ -304,9 +304,6 @@ class Asn implements ModelInterface, ArrayAccess, JsonSerializable
         if ($this->container['domain'] === null) {
             $invalidProperties[] = "'domain' can't be null";
         }
-        if ($this->container['type'] === null) {
-            $invalidProperties[] = "'type' can't be null";
-        }
         if ($this->container['prefix'] === null) {
             $invalidProperties[] = "'prefix' can't be null";
         }
@@ -412,9 +409,9 @@ class Asn implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Gets type
      *
-     * @return string
+     * @return string|null
      */
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->container['type'];
     }
@@ -422,11 +419,11 @@ class Asn implements ModelInterface, ArrayAccess, JsonSerializable
     /**
      * Sets type
      *
-     * @param string $type The kind of network it runs.
+     * @param string|null $type The kind of network it runs. On a paid plan or the trial.
      *
      * @return $this
      */
-    public function setType(string $type): static
+    public function setType(?string $type): static
     {
         if (is_null($type)) {
             throw new InvalidArgumentException('non-nullable type cannot be null');

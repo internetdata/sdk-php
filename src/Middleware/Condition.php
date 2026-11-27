@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace InternetData\Middleware;
 
-use InternetData\HeldFlags;
+use InternetData\HeldMembers;
 use InternetData\Result;
 
 /**
@@ -60,8 +60,8 @@ final class Condition
      *
      * A locally answered bogon needs no special case: it is synthesized in the widest
      * shape, so every member is present and nothing reads as missing. The eight flags a
-     * `Result` holds at `false` are judged by the wire answer, so one Unlimited leaves out
-     * is reported though it reads `false`.
+     * `Result` holds at `false` and the AS's `type`, held at `''`, are judged by the wire
+     * answer, so one Unlimited leaves out is reported though it reads `false` or `''`.
      *
      * @param array<mixed> $condition
      * @return list<string>
@@ -70,7 +70,7 @@ final class Condition
     {
         $missing = [];
         foreach (self::asList($condition) as $one) {
-            self::collectMissing($one, $result, '', $missing);
+            self::collectMissing($one, $result, $result, '', $missing);
         }
         return $missing;
     }
@@ -140,6 +140,7 @@ final class Condition
      */
     private static function collectMissing(
         array $condition,
+        Result $root,
         object $value,
         string $prefix,
         array &$missing,
@@ -150,7 +151,7 @@ final class Condition
             }
             $path = $prefix . $member;
             $got = property_exists($value, (string) $member) ? $value->{$member} : null;
-            if ($got === null || self::unserved($value, (string) $member, $prefix)) {
+            if ($got === null || HeldMembers::unserved($root, $path)) {
                 if (!in_array($path, $missing, true)) {
                     $missing[] = $path;
                 }
@@ -158,23 +159,9 @@ final class Condition
             }
             if (is_array($want) && !array_is_list($want) && !self::isBound($want) && self::populated($got)) {
                 /** @var array<string, mixed> $want */
-                self::collectMissing($want, $got, "{$path}.", $missing);
+                self::collectMissing($want, $root, $got, "{$path}.", $missing);
             }
         }
-    }
-
-    /**
-     * Whether a top-level flag held at `bool` was left out of the answer the result was read
-     * from. A result with no wire answer behind it (`raw` empty: a bogon answered locally)
-     * carries every member, so none is unserved.
-     */
-    private static function unserved(object $value, string $member, string $prefix): bool
-    {
-        return $prefix === ''
-            && $value instanceof Result
-            && $value->raw !== []
-            && isset(HeldFlags::WIRE[$member])
-            && !array_key_exists(HeldFlags::WIRE[$member], $value->raw);
     }
 
     /**

@@ -47,6 +47,11 @@ final class AnswerTypesTest extends TestCase
         'domain' => 'm247global.com',
     ];
 
+    /** A hosting entry's `asn`, every member the spec requires. */
+    private const HOSTING_ASN = [
+        'asn' => 64496, 'name' => '', 'domain' => '', 'prefix' => '', 'country' => '', 'rpki_status' => '',
+    ];
+
     private const DOMAIN = [
         'domain' => 'example.com',
         'is_registered' => true,
@@ -87,6 +92,9 @@ final class AnswerTypesTest extends TestCase
             'asn.asn "13335"' => $lookup(['asn' => [
                 'asn' => '13335', 'name' => '', 'domain' => '', 'type' => '', 'prefix' => '',
             ]]),
+            'asn.type null' => $lookup(['asn' => [...Stub::answer('9.9.9.9')['asn'], 'type' => null]]),
+            'asn.type 1' => $lookup(['asn' => [...Stub::answer('9.9.9.9')['asn'], 'type' => 1]]),
+            'asn.type ["hosting"]' => $lookup(['asn' => [...Stub::answer('9.9.9.9')['asn'], 'type' => ['hosting']]]),
             'location.latitude "48.2"' => $lookup(['location' => [
                 ...Stub::answer('9.9.9.9')['location'], 'latitude' => '48.2',
             ]]),
@@ -158,6 +166,12 @@ final class AnswerTypesTest extends TestCase
             ],
             'domain: a hosting asn "64496"' => ['/domain/example.com', self::DOMAIN + ['hosting' => [[
                 'ip' => '192.0.2.10', 'asn' => ['asn' => '64496', 'name' => '', 'domain' => '', 'type' => '', 'prefix' => ''],
+            ]]], $domain],
+            'domain: a hosting asn type null' => ['/domain/example.com', self::DOMAIN + ['hosting' => [[
+                'ip' => '192.0.2.10', 'asn' => [...self::HOSTING_ASN, 'type' => null],
+            ]]], $domain],
+            'domain: a hosting asn type 1' => ['/domain/example.com', self::DOMAIN + ['hosting' => [[
+                'ip' => '192.0.2.10', 'asn' => [...self::HOSTING_ASN, 'type' => 1],
             ]]], $domain],
             'domain: a hosting asn without its prefix' => ['/domain/example.com', self::DOMAIN + ['hosting' => [[
                 'ip' => '192.0.2.10', 'asn' => ['asn' => 64496, 'name' => '', 'domain' => '', 'type' => ''],
@@ -330,6 +344,51 @@ final class AnswerTypesTest extends TestCase
             self::assertArrayNotHasKey($wire, $result->raw, $wire);
             self::assertCount(1, $stub->calls, "{$wire}: read at once, not retried");
         }
+    }
+
+    public function testAnAnswerWithoutTheAsnTypeReadsItEmptyAndShowsItAbsent(): void
+    {
+        $asn = Stub::answer('9.9.9.1')['asn'];
+        $served = ['asn' => [...$asn, 'type' => 'hosting']];
+        $empty = ['asn' => [...$asn, 'type' => '']];
+        $stub = new Stub([
+            '/9.9.9.1' => Stub::ok(Stub::answer('9.9.9.1')),
+            '/9.9.9.2' => Stub::ok(Stub::answer('9.9.9.2', $served)),
+            '/9.9.9.3' => Stub::ok(Stub::answer('9.9.9.3', $empty)),
+            '/batch' => Stub::ok([
+                'results' => [
+                    '9.9.9.4' => Stub::answer('9.9.9.4'),
+                    '9.9.9.5' => Stub::answer('9.9.9.5', $served),
+                ],
+                'errors' => new \stdClass(),
+            ]),
+            '/domain/example.com' => Stub::ok(self::DOMAIN + ['hosting' => [
+                ['ip' => '192.0.2.10', 'asn' => self::HOSTING_ASN],
+                ['ip' => '192.0.2.11', 'asn' => [...self::HOSTING_ASN, 'type' => 'isp']],
+            ]]),
+        ]);
+        $client = new Client(new Options(cache: false, httpClient: $stub->client));
+
+        $batch = $client->lookupBatch(['9.9.9.4', '9.9.9.5']);
+        foreach ([$client->lookup('9.9.9.1'), $batch['9.9.9.4']] as $i => $result) {
+            self::assertInstanceOf(Result::class, $result, "answer {$i}");
+            self::assertSame('', $result->asn->type, "answer {$i}: type reads ''");
+            self::assertSame('M247 Europe SRL', $result->asn->name, "answer {$i}");
+            self::assertArrayNotHasKey('type', $result->raw['asn'], "answer {$i}");
+        }
+        foreach ([$client->lookup('9.9.9.2'), $batch['9.9.9.5']] as $i => $result) {
+            self::assertInstanceOf(Result::class, $result, "served {$i}");
+            self::assertSame('hosting', $result->asn->type, "served {$i}: type reads as served");
+            self::assertSame('hosting', $result->raw['asn']['type'], "served {$i}");
+        }
+        $blank = $client->lookup('9.9.9.3');
+        self::assertSame('', $blank->asn->type);
+        self::assertArrayHasKey('type', $blank->raw['asn'], "a type served as '' is present");
+
+        $hosting = $client->lookupDomain('example.com')->hosting;
+        self::assertSame(['', 'isp'], [$hosting[0]->asn->type, $hosting[1]->asn->type]);
+        self::assertSame(64496, $hosting[0]->asn->asn);
+        self::assertCount(5, $stub->calls, 'each read at once, never retried');
     }
 
     public function testABatchEntryOfTheWrongTypeFailsThatAddressAlone(): void
