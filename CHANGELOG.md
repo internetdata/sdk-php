@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.19.0 - 2026-11-27
+
+### Fixes
+
+- Read a keyless answer without the AS's type ([`836a5f3`](https://github.com/internetdata/sdk-php/commit/836a5f3c0fbba2c2221e5f2dd8a9a3f696f2de32))
+
 ## 2.18.0 - 2026-11-26
 
 ### Fixes
