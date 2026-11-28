@@ -24,9 +24,12 @@ final class EntitlementUsage
          * below this, requests are served and billed as overage.
          */
         public readonly ?int $hardLimit,
-        /** When the current allowance period began. */
+        /**
+         * When the current allowance period began. On the free plan, when its trial
+         * began, or now before a first lookup starts it.
+         */
         public readonly DateTimeImmutable $windowStart,
-        /** When the allowance next resets. */
+        /** When the allowance next resets. On the free plan, when its trial ends, which it does once. */
         public readonly DateTimeImmutable $windowEnd,
     ) {
     }
