@@ -2,6 +2,19 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.2.2 are described by their release commits.
 
+## 2.20.0 - 2026-11-28
+
+### Features
+
+- Middleware: allowBots sends only a crawler's User-Agent, at most four an address ([`c18448a`](https://github.com/internetdata/sdk-php/commit/c18448a0355883e7fa7b62fe8933fbb778e4fac8))
+- Middleware: remember an address's crawler agents across requests ([`6747f22`](https://github.com/internetdata/sdk-php/commit/6747f22eac23517cd1284286fac126b25863ff23))
+
+### Fixes
+
+- Middleware: a condition on the verdict is no plan gap for a request that sent no agent ([`e8a51ab`](https://github.com/internetdata/sdk-php/commit/e8a51ab3da9d31dbfe5d00098cf21865e8649e1d))
+- Middleware: a bogon's answer reports no missing member ([`9c9896d`](https://github.com/internetdata/sdk-php/commit/9c9896de80daa17aa74782e0a9d74f5142b04885))
+- Spec 2026.11.27: the free plan's trial is a window, not the UTC month ([`7649b24`](https://github.com/internetdata/sdk-php/commit/7649b2427ce63e77dbdffb00e9fc1f8b7e3a9ff1))
+
 ## 2.19.0 - 2026-11-27
 
 ### Fixes
