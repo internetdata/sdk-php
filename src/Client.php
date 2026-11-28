@@ -22,6 +22,7 @@ use InternetData\Internal\Model\LookupResponse;
 use OutOfBoundsException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\SimpleCache\CacheInterface;
 use TypeError;
 use ValueError;
 
@@ -49,6 +50,7 @@ final class Client
     private readonly WireEntitlementApi $entitlementApi;
     private readonly Transport $transport;
     private readonly ?AnswerCache $cache;
+    private readonly ?CacheInterface $store;
     private readonly int $concurrency;
 
     /**
@@ -88,6 +90,7 @@ final class Client
         $this->lookupApi = new LookupApi($http, $config);
         $this->entitlementApi = new WireEntitlementApi($http, $config);
         $this->transport = new Transport($http, $options->retries, $options->timeout);
+        $this->store = $options->cache ? $options->cacheStore : null;
         $this->cache = match (true) {
             !$options->cache => null,
             $options->cacheStore !== null => new StoreCache(
@@ -100,6 +103,18 @@ final class Client
         $this->concurrency = $options->concurrency;
         $this->database = new DatabaseApi(new DatabaseV2Api($http, $config), $this->transport);
         $this->oauth = new OauthApi($this->transport, self::oauthBase($options->baseUrl), self::userAgent());
+    }
+
+    /**
+     * @internal
+     *
+     * The PSR-16 store this client keeps its answers in, or null when it keeps them itself:
+     * the middleware keeps its per-address records there too, where a request builds the
+     * client afresh.
+     */
+    public function cacheStore(): ?CacheInterface
+    {
+        return $this->store;
     }
 
     /**
