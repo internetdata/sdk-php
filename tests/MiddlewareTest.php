@@ -756,6 +756,37 @@ final class MiddlewareTest extends TestCase
         self::assertCount(1, $warned, 'off, a condition on the verdict can never match, and says so');
     }
 
+    // A bogon peer, local development behind no proxy, is answered locally in the widest shape and
+    // carries no verdict, and that is no plan gap: onMissingField 'throw' failed a crawler's request there.
+    public function testABogonPeerWithACrawlerAgentIsNoPlanGap(): void
+    {
+        $forged = ['userAgent' => ['verdict' => 'spoofed']];
+        foreach (['127.0.0.1', '10.0.0.1', '::1'] as $peer) {
+            foreach (['throw', 'warn'] as $action) {
+                $label = "{$peer}, {$action}";
+                $agents = [];
+                $warnings = [];
+                $lookup = self::core(new MwOptions(
+                    client: self::botsAddress($agents, verdict: 'spoofed'),
+                    blockCondition: $forged,
+                    allowBots: true,
+                    onMissingField: $action,
+                    onWarn: function (string $m) use (&$warnings): void {
+                        $warnings[] = $m;
+                    },
+                ))->evaluate(new Req(ip: $peer), self::GOOGLEBOT);
+
+                self::assertTrue($lookup?->result?->isBogon, $label);
+                self::assertFalse($lookup->blocked, $label);
+                self::assertSame([], $agents, "{$label}: a bogon reached the origin");
+                self::assertSame([], Condition::missingMembers($forged, $lookup->result), $label);
+                foreach ($warnings as $message) {
+                    self::assertStringNotContainsString('does not include', $message, $label);
+                }
+            }
+        }
+    }
+
     public function testABogonPeerIsAnsweredLocallyAndLetsNothingThrough(): void
     {
         $warnings = [];

@@ -58,16 +58,20 @@ final class Condition
      * populated object carries every member the plan includes, so a member missing
      * there is one.
      *
-     * A locally answered bogon needs no special case: it is synthesized in the widest
-     * shape, so every member is present and nothing reads as missing. The eight flags a
-     * `Result` holds at `false` and the AS's `type`, held at `''`, are judged by the wire
-     * answer, so one Unlimited leaves out is reported though it reads `false` or `''`.
+     * A bogon's answer reports nothing missing: it is synthesized in the widest shape, so
+     * every member is present but a user agent's verdict, which the client leaves out of it
+     * and no plan gap explains. The eight flags a `Result` holds at `false` and the AS's
+     * `type`, held at `''`, are judged by the wire answer, so one Unlimited leaves out is
+     * reported though it reads `false` or `''`.
      *
      * @param array<mixed> $condition
      * @return list<string>
      */
     public static function missingMembers(array $condition, Result $result): array
     {
+        if ($result->isBogon) {
+            return [];
+        }
         $missing = [];
         foreach (self::asList($condition) as $one) {
             self::collectMissing($one, $result, $result, '', $missing);
